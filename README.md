@@ -5,36 +5,36 @@ There are approximately $N=250000$ words in english language. This means that ev
 
 Since $18 = 3 \cdot 6$, we can encode these words are sequence of $6$ syllables, which would belong to a set of $2^3 = 8$ values.
 
-For instance $\mathtt{the} = 001200$. Each of the syllables could have a hidden intuitionistic meaning based on the language itself.
+For instance $\texttt{the} = 001200$. Each of the syllables could have a hidden intuitionistic meaning based on the language itself.
 
-Assume that we want to infrer $\mathtt{word} = w_0w_1w_2w_3w_4w_5$: 
+Assume that we want to infrer $\texttt{word} = w_0w_1w_2w_3w_4w_5$: 
 
 - $w_0$ would be inferred by computing as follows:
-    - compute the statistical positioning of $\mathtt{word}$ in a sentence;
+    - compute the statistical positioning of $\texttt{word}$ in a sentence;
     - partition the set of words ordered as such in 8 bins;
-    - attribute the index associated with $\mathtt{word}$ to $w_0$;
+    - attribute the index associated with $\texttt{word}$ to $w_0$;
 
 - [NEED TO FIX] $w_{1}$ relies on $w_{0}$ as follows:
     -   for any $w \geq w_0$ for which there exists a sentence of the form
-        $$w\square\square\square\square\square \quad \dots \quad \mathtt{word}$$
-        compute the statistical positioning of $\mathtt{word}$.
+        $$w\square\square\square\square\square \quad \dots \quad \texttt{word}$$
+        compute the statistical positioning of $\texttt{word}$.
 
 - [NEED TO FIX] $w_{2}$ relies on $w_{1}$ as follows:
     -   for any $w \geq w_1$ for which there exists a sentence of the form
-        $$\square w\square\square\square\square \quad \dots \quad \mathtt{word}$$
-        compute the statistical positioning of $\mathtt{word}$.
+        $$\square w\square\square\square\square \quad \dots \quad \texttt{word}$$
+        compute the statistical positioning of $\texttt{word}$.
 
 For example, if we have:
- - $\mathtt{The\_}=000000$
- - $\mathtt{scientist\_}=000000$
- - $\mathtt{carefully\_}=000000$
- - $\mathtt{analyzed\_}=100000$ 
- - $\mathtt{the\_}=100000$
- - $\mathtt{data\_}=200000$
- - $\mathtt{,\_}=400000$
- - $\mathtt{searching\_}=500000$
- - $\mathtt{for\_}=600000$
- - $\mathtt{patterns\_}=500000$
- - $\mathtt{in\_}=200000$
- - $\mathtt{the\_}=100000$ 
- - $\mathtt{results.}=700000$
+ - $\texttt{The\_}=000000$
+ - $\texttt{scientist\_}=000000$
+ - $\texttt{carefully\_}=000000$
+ - $\texttt{analyzed\_}=100000$ 
+ - $\texttt{the\_}=100000$
+ - $\texttt{data\_}=200000$
+ - $\texttt{,\_}=400000$
+ - $\texttt{searching\_}=500000$
+ - $\texttt{for\_}=600000$
+ - $\texttt{patterns\_}=500000$
+ - $\texttt{in\_}=200000$
+ - $\texttt{the\_}=100000$ 
+ - $\texttt{results.}=700000$
