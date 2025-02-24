@@ -5,6 +5,8 @@ There are approximately $N=250000$ words in english language. This means that ev
 
 Since $18 = 3 \cdot 6$, we can encode these words are sequence of $3$ syllables, which would be made out of $2^6 = 64$ possible letters.
 
+Since our alphabet is made of $2^6$, we can have a NN with 6 outputs that returns the binary decomposition of the letter. Since the NN gives the actual letter (and not the probability associated with the 64 letters), we can direct use the output as the next token in the sentence.s
+
 For instance $\texttt{the} = [0,1,4]$. Each of the syllables could have a hidden intuitionistic meaning based on the language itself.
 
 Assume that we want to infrer $\texttt{word} = w_0w_1w_2$: 
