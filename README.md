@@ -25,16 +25,16 @@ Assume that we want to infrer $\texttt{word} = w_0w_1w_2w_3w_4w_5$:
         compute the statistical positioning of $\texttt{word}$.
 
 For example, if we have:
- - $\texttt{The\_}=000000$
- - $\texttt{scientist\_}=000000$
- - $\texttt{carefully\_}=000000$
- - $\texttt{analyzed\_}=100000$ 
- - $\texttt{the\_}=100000$
- - $\texttt{data\_}=200000$
- - $\texttt{,\_}=400000$
- - $\texttt{searching\_}=500000$
- - $\texttt{for\_}=600000$
- - $\texttt{patterns\_}=500000$
- - $\texttt{in\_}=200000$
- - $\texttt{the\_}=100000$ 
+ - $\texttt{The }=000000$
+ - $\texttt{scientist }=000000$
+ - $\texttt{carefully }=000000$
+ - $\texttt{analyzed }=100000$ 
+ - $\texttt{the }=100000$
+ - $\texttt{data }=200000$
+ - $\texttt{, }=400000$
+ - $\texttt{searching }=500000$
+ - $\texttt{for }=600000$
+ - $\texttt{patterns }=500000$
+ - $\texttt{in }=200000$
+ - $\texttt{the }=100000$ 
  - $\texttt{results.}=700000$
