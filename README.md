@@ -14,27 +14,27 @@ Assume that we want to infrer $\mathtt{word} = w_0w_1w_2w_3w_4w_5$:
     - partition the set of words ordered as such in 8 bins;
     - attribute the index associated with $\mathtt{word}$ to $w_0$;
 
-- $w_{1}$ relies on $w_{0}$ as follows:
+- [NEED TO FIX] $w_{1}$ relies on $w_{0}$ as follows:
     -   for any $w \geq w_0$ for which there exists a sentence of the form
         $$w\square\square\square\square\square \quad \dots \quad \mathtt{word}$$
         compute the statistical positioning of $\mathtt{word}$.
 
-- $w_{2}$ relies on $w_{1}$ as follows:
+- [NEED TO FIX] $w_{2}$ relies on $w_{1}$ as follows:
     -   for any $w \geq w_1$ for which there exists a sentence of the form
         $$\square w\square\square\square\square \quad \dots \quad \mathtt{word}$$
         compute the statistical positioning of $\mathtt{word}$.
 
 For example, if we have:
  - $\mathtt{The\_}=000000$
- - $\mathtt{scientist\_}=100000$
- - $\mathtt{carefully\_}=200000$
- - $\mathtt{analyzed\_}=300000$ 
- - $\mathtt{the\_}=400000$
- - $\mathtt{data\_}=500000$
- - $\mathtt{,\_}=600000$
- - $\mathtt{searching\_}=700000$
- - $\mathtt{for\_}=010000$
- - $\mathtt{patterns\_}=020000$
- - $\mathtt{in\_}=030000$
- - $\mathtt{the\_}=400000$ 
- - $\mathtt{results.}=050000$
+ - $\mathtt{scientist\_}=000000$
+ - $\mathtt{carefully\_}=000000$
+ - $\mathtt{analyzed\_}=100000$ 
+ - $\mathtt{the\_}=100000$
+ - $\mathtt{data\_}=200000$
+ - $\mathtt{,\_}=400000$
+ - $\mathtt{searching\_}=500000$
+ - $\mathtt{for\_}=600000$
+ - $\mathtt{patterns\_}=500000$
+ - $\mathtt{in\_}=200000$
+ - $\mathtt{the\_}=100000$ 
+ - $\mathtt{results.}=700000$
