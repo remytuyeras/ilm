@@ -17,7 +17,7 @@ Assume that we want to infrer $\texttt{word} = w_0w_1w_2$:
 - $w_{i+1}$ relies on $w_{0}\dots w_{i}$ as follows:
     - compute the relative statistical positioning of $\texttt{word}$ among all words starting with $w_{0}\dots w_{i}$ for any available sentence;
       
-    $$[w_0,a,b]_{=0} \quad\dots\quad [w_0,c,d]_{=1} \quad\dots\quad [w_0,e,f]_{=2}$$
+    $$[w_0,a,b] (\to 0) \quad\dots\quad [w_0,c,d] (\to 1) \quad\dots\quad [w_0,e,f] (\to 2)$$
   
     - partition the set of words ordered as such in 8 bins;
     - attribute the index associated with $\texttt{word}$ to $w_{i+1}$
