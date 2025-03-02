@@ -57,15 +57,15 @@ By designing a hierarchical tokenizer as a core building block, ILM seeks to est
 This repository provides a set of tools to:
 - **Generate a hierarchical tokenizer** from a training text file by computing token weights based on their relative positions within different text segments (e.g., sentences, paragraphs).
 - **Build a composite mapping from tokens to codes** (and vice versa) that is ideal for structured language modeling.
-- **Integration with Neural Network Pipelines:** The tokenizer produces token codes that can serve as inputs for language models. In a typical pipeline, the neural network would output a probability distribution over the 64 token options for each syllable position, which can then be mapped back to tokens using the provided detokenizer.
+- **Integration with Neural Network Pipelines:** the tokenizer produces token codes that can serve as inputs for language models. In a typical pipeline, the neural network would output a probability distribution over the 64 token options for each syllable position, which can then be mapped back to tokens using the provided detokenizer.
 
 ## Repository structure
 
-- **`tokenizer/intuit.py`**: Contains the main functions for tokenization, including generating, saving, and loading tokenizers.
-- **`tokenizer/create_training.py`**: (Optional) Script to create a default training dataset (`training_input.txt`) from a parquet file.
-- **`tests/`**: Contains unit tests for validating functionality.  
-- **`data/`**: Place your training input and tokenizer mapping files here.
-- **`img/`**: Contains images used in the documentation (e.g., the neural network diagram).
+- **`tokenizer/intuit.py`**: contains the main functions for tokenization, including generating, saving, and loading tokenizers.
+- **`tokenizer/create_training.py`**: (optional) script to create a default training dataset (`training_input.txt`) from a parquet file.
+- **`tests/`**: contains unit tests for validating functionality.  
+- **`data/`**: place your training input and tokenizer mapping files here.
+- **`img/`**: contains images used in the documentation (e.g., the neural network diagram).
 
 ## Installation
 
@@ -156,19 +156,19 @@ The tokenizer convert text into structured token sequences for language models. 
 
 ## Tutorial
 
-1. **Prepare Your Data:**  
+1. **Prepare your data:**  
    Place your training text file (e.g., `training_input.txt`) in the `data/` directory. Use your own dataset or create one using:
    ```bash
    python tokenizer/create_training.py
    ```
 
-2. **Create the Tokenizer:**  
+2. **Create the tokenizer:**  
    Generate the tokenizer mapping from your dataset. The mapping is stored in JSON format, so you can reload it later for inference or integration with your language model.
 
-3. **Integrate with Your Neural Network:**  
+3. **Integrate with your neural network:**  
    Use the tokenizer to convert text to token sequences, which serve as inputs for your language model. The neural network outputs can be mapped back to text using the detokenizer.
 
-4. **Run Unit Tests:**  
+4. **Run Unit tests:**  
    Validate the functionality of the module by running the tests:
    ```bash
    pytest tests/test_*
