@@ -1,6 +1,6 @@
 <p align="center">
   <p align="center"><img src="img/logo_georgia.png" width="400px" /></p>
-  <p align="center"><em>A research-driven toolkit for developing language models with hierarchical tokenization</em></p>
+  <p align="center"><em>A toolkit for language models based on hierarchical tokenization</em></p>
 </p>
 
 
