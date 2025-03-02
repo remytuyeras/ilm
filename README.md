@@ -5,7 +5,7 @@
 
 # Introduction
 
-#### Definition and motivations
+### Definition and motivations
 
 **Intuitionistic Language Models (ILM)** is a research-driven toolkit for developing language models with hierarchical tokenization. This approach structures tokens across multiple levels, enabling the representation of both local and global linguistic patterns without relying on a fixed alphabet. The repository currently provides a hierarchical tokenizer as a foundation for future developments. In subsequent releases, ILM aims to extend this work by introducing tools for training, evaluating, and deploying language models that leverage structured token representations.
 
@@ -17,7 +17,7 @@ bits. Notably, since $18 = 3 \cdot 6$, it is possible to structure words as sequ
 
 This is in contrast to widely used tokenization methods, which rely on much larger vocabularies, sometimes exceeding $50000$ tokens. The choice of a limited, structured alphabet offers a more compact and compositional representation of language, reducing reliance on memorized tokens and fostering a systematic approach to language modeling.
 
-#### Biology as an inpiration
+### Biology as an inpiration
 
 <div align="center">
   <img src="img/transcription_2.png" alt="Neural Network Diagram" width="400">
@@ -25,41 +25,29 @@ This is in contrast to widely used tokenization methods, which rely on much larg
 
 This principle echoes the fundamental encoding strategy found in biological systems. In genetics, DNA relies on just 64 codons to encode the vast complexity of life. Similarly, by adopting a structured and minimal set of building blocks, ILM aims to create a tokenization framework that is both expressive and efficient.
 
-#### Example
+### Example
 The hierarchical tokenization process assigns structured representations to words, allowing for a more systematic decomposition of language. Below is an example of how words are mapped into a three-level token structure, where each component captures an aspect of the token hierarchy:
 
-```
-'Think': [0, 0, 0]
-'Excluding': [0, 0, 1]
-'Allen': [0, 0, 2]
-'Bill': [0, 0, 3]
-'Jenna': [0, 0, 4]
-'Pick': [0, 0, 5]
-'Tyler': [0, 0, 6]
-'Choosing': [0, 0, 7]
-'Geoff': [0, 0, 8]
-'Marius': [0, 0, 9]
-'Spinners': [0, 0, 10]
+```python
+{
+   "Think": "0:0:0",
+   "Excluding": "0:0:1",
+   "Allen": "0:0:2",
+   "Bill": "0:0:3",
 
 (...)
 
-' pursuers': [63, 44, 21]
-'1073741825': [63, 44, 22]
-' crearlos': [63, 44, 23]
-' информации': [63, 44, 24]
-' longtemps': [63, 45, 0]
-' Virgo': [63, 45, 1]
-' Zacharias': [63, 45, 2]
-' 1812': [63, 45, 3]
-' exterminator': [63, 45, 4]
-' centigrade': [63, 45, 5]
-' datacenter': [63, 45, 6]
-' Xylophoria': [63, 45, 7]
-' domesticating': [63, 45, 8]
-' 1691': [63, 45, 9]
+   " involves": "22:9:5",
+   "matrix_a": "22:9:6",
+   " Exciting": "22:9:7",
 
 (...)
 
+   " inutilizados": "63:63:54",
+   " Vandenburg": "63:63:55",
+   " pelt": "63:63:56",
+   " 727": "63:63:57"
+}
 ```
 
 By designing a hierarchical tokenizer as a core building block, ILM seeks to establish a structured framework for tokenization that can be directly integrated into future language model architectures. The toolkit is intended to provide researchers and practitioners with flexible and interpretable tokenization methods, forming the basis for more expressive and efficient language models.
@@ -71,7 +59,7 @@ This repository provides a set of tools to:
 - **Build a composite mapping from tokens to codes** (and vice versa) that is ideal for structured language modeling.
 - **Integration with Neural Network Pipelines:** The tokenizer produces token codes that can serve as inputs for language models. In a typical pipeline, the neural network would output a probability distribution over the 64 token options for each syllable position, which can then be mapped back to tokens using the provided detokenizer.
 
-## Repository Structure
+## Repository structure
 
 - **`tokenizer/intuit.py`**: Contains the main functions for tokenization, including generating, saving, and loading tokenizers.
 - **`tokenizer/create_training.py`**: (Optional) Script to create a default training dataset (`training_input.txt`) from a parquet file.
@@ -89,7 +77,7 @@ pip install -r requirements.txt
 
 ## Quickstart
 
-### Using the Code in the Repo
+### Using the code in the repo
 
 To integrate the tokenizer with your projects, import the module from the `tokenizer` folder as follows:
 
@@ -99,7 +87,7 @@ sys.path.insert(1, "./")
 from tokenizer.intuit import create_tokenizer, load_tokenizer
 ```
 
-### Creating a Tokenizer
+### Creating a tokenizer
 
 If you have your own dataset, place your training text file (e.g., `training_input.txt`) in the `data/` directory and create a tokenizer:
 
@@ -110,7 +98,7 @@ from tokenizer.intuit import create_tokenizer
 tokenizer, detokenizer = create_tokenizer(source_file="data/training_input.txt", target_file="data/tokenizer_v1.json")
 ```
 
-### Loading an Existing Tokenizer
+### Loading an existing tokenizer
 
 To load a previously saved tokenizer mapping:
 
@@ -121,7 +109,7 @@ from tokenizer.intuit import load_tokenizer
 tokenizer, detokenizer = load_tokenizer("data/tokenizer_v1.json")
 ```
 
-### Optional: Creating a Default Training Dataset
+### Optional: creating a default training dataset
 
 If you do not have your own training dataset, you can create a default `training_input.txt` by running the provided script:
 
@@ -129,9 +117,9 @@ If you do not have your own training dataset, you can create a default `training
 python tokenizer/create_training.py
 ```
 
-This script reads data from a parquet file using pandas and generates `training_input.txt` in the `data/` directory. Alternatively, you can use your own dataset.
+This script reads data from the `garage-bAInd/Open-Platypus` [dataset](https://huggingface.co/datasets/garage-bAInd/Open-Platypus) and generates `training_input.txt` in the `data/` directory. Alternatively, you can use your own dataset.
 
-### Sample Usage with Language Models
+### Sample usage with language models
 
 Below is an example demonstrating how to integrate the tokenizer into a language model pipeline:
 
@@ -162,9 +150,9 @@ reconstructed_text = detokenizer(token_codes)
 print("Reconstructed Text:", reconstructed_text)
 ```
 
-## Integration with Neural Networks
+## Integration with AI models
 
-The provided tokenizer and detokenizer functions convert text to structured token sequences suitable for language model inputs. In a typical neural network pipeline, the model predicts a probability distribution over the 64 possible tokens for each syllable position. The mapping provided by this toolkit allows you to interpret these predictions and convert them back into human-readable tokens.
+The tokenizer convert text into structured token sequences for language models. Neural networks using this approach should have 64 outputs per syllable position, which the detokenize maps back into readable text.
 
 ## Tutorial
 
