@@ -2,7 +2,9 @@
 
 **Intuitionistic Language Models (ILM)** is a research-driven toolkit for developing language models with hierarchical tokenization. This approach structures tokens across multiple levels, enabling the representation of both local and global linguistic patterns without relying on a fixed alphabet. The repository currently provides a hierarchical tokenizer as a foundation for future developments. In subsequent releases, ILM aims to extend this work by introducing tools for training, evaluating, and deploying language models that leverage structured token representations.
 
-A key motivation behind this approach is the observation that the English language contains approximately $N = 250,000$ words. In principle, each word can be encoded as a sequence of $\lceil \log_2(N) \rceil = 18$ bits. Notably, since $18 = 3 \cdot 6$, it is possible to structure words as sequences of three syllables, where each syllable is drawn from a set of $2^6 = 64$ possible symbols. This is in contrast to widely used tokenization methods such as *tiktoken*, which rely on much larger vocabularies, sometimes exceeding 50,000 tokens. The choice of a limited, structured alphabet offers a more compact and compositional representation of language, reducing reliance on memorized tokens and fostering a systematic approach to language modeling.
+A key motivation behind this approach is the observation that the English language contains approximately $N = 250,000$ words. In principle, each word can be encoded as a sequence of $$\lceil \log_2(N) \rceil = 18$$ bits. Notably, since $18 = 3 \cdot 6$, it is possible to structure words as sequences of three syllables, where each syllable is drawn from a set of $2^6 = 64$ possible symbols. 
+
+This is in contrast to widely used tokenization methods, which rely on much larger vocabularies, sometimes exceeding $50000$ tokens. The choice of a limited, structured alphabet offers a more compact and compositional representation of language, reducing reliance on memorized tokens and fostering a systematic approach to language modeling.
 
 #### Biology as an inpiration
 
