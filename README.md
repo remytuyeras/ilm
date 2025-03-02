@@ -57,7 +57,7 @@ By designing a hierarchical tokenizer as a core building block, ILM seeks to est
 This repository provides a set of tools to:
 - **Generate a hierarchical tokenizer** from a training text file by computing token weights based on their relative positions within different text segments (e.g., sentences, paragraphs).
 - **Build a composite mapping from tokens to codes** (and vice versa) that is ideal for structured language modeling.
-- **Integration with Neural Network Pipelines:** the tokenizer produces token codes that can serve as inputs for language models. In a typical pipeline, the neural network would output a probability distribution over the 64 token options for each syllable position, which can then be mapped back to tokens using the provided detokenizer.
+- **Integration with LM pipelines:** The tokenizer produces token codes that can serve as inputs for language models. In a typical pipeline, the neural network would output a probability distribution over the 64 token options for each syllable position, which can then be mapped back to tokens using the provided detokenizer.
 
 ## Repository structure
 
@@ -149,10 +149,6 @@ print("Token Codes:", token_codes)
 reconstructed_text = detokenizer(token_codes)
 print("Reconstructed Text:", reconstructed_text)
 ```
-
-## Integration with AI models
-
-The tokenizer convert text into structured token sequences for language models. Neural networks using this approach should have 64 outputs per syllable position, which the detokenizer maps back into readable text.
 
 ## Methodology
 
