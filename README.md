@@ -152,24 +152,20 @@ print("Reconstructed Text:", reconstructed_text)
 
 ## Integration with AI models
 
-The tokenizer convert text into structured token sequences for language models. Neural networks using this approach should have 64 outputs per syllable position, which the detokenize maps back into readable text.
+The tokenizer convert text into structured token sequences for language models. Neural networks using this approach should have 64 outputs per syllable position, which the detokenizer maps back into readable text.
 
-## Tutorial
+## Methodology
 
-1. **Prepare your data:**  
-   Place your training text file (e.g., `training_input.txt`) in the `data/` directory. Use your own dataset or create one using:
+1. **Prepare your data:**  Place your training text file (e.g., `training_input.txt`) in the `data/` directory. Use your own dataset or create one using:
    ```bash
    python tokenizer/create_training.py
    ```
 
-2. **Create the tokenizer:**  
-   Generate the tokenizer mapping from your dataset. The mapping is stored in JSON format, so you can reload it later for inference or integration with your language model.
+2. **Create the tokenizer:**  Generate the tokenizer mapping from your dataset. The mapping is stored in JSON format, so you can reload it later for inference or integration with your language model.
 
-3. **Integrate with your neural network:**  
-   Use the tokenizer to convert text to token sequences, which serve as inputs for your language model. The neural network outputs can be mapped back to text using the detokenizer.
+3. **Integrate with your neural network:**  Use the tokenizer to convert text to token sequences, which serve as inputs for your language model. The neural network outputs can be mapped back to text using the detokenizer.
 
-4. **Run unit tests:**  
-   Validate the functionality of the module by running the tests:
+4. **Run unit tests:**  Validate the functionality of the module by running the tests:
    ```bash
    pytest tests/test_*
    ```
