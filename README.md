@@ -3,6 +3,9 @@
   <p align="center"><em>A toolkit for language models based on hierarchical tokenization</em></p>
 </p>
 
+# Introduction
+
+#### Definition and motivations
 
 **Intuitionistic Language Models (ILM)** is a research-driven toolkit for developing language models with hierarchical tokenization. This approach structures tokens across multiple levels, enabling the representation of both local and global linguistic patterns without relying on a fixed alphabet. The repository currently provides a hierarchical tokenizer as a foundation for future developments. In subsequent releases, ILM aims to extend this work by introducing tools for training, evaluating, and deploying language models that leverage structured token representations.
 
