@@ -168,7 +168,7 @@ The tokenizer convert text into structured token sequences for language models. 
 3. **Integrate with your neural network:**  
    Use the tokenizer to convert text to token sequences, which serve as inputs for your language model. The neural network outputs can be mapped back to text using the detokenizer.
 
-4. **Run Unit tests:**  
+4. **Run unit tests:**  
    Validate the functionality of the module by running the tests:
    ```bash
    pytest tests/test_*
