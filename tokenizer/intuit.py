@@ -54,7 +54,6 @@ def force_json_extension(file_path: str) -> str:
     base, _ = os.path.splitext(file_path)
     return f"{base}.json"
 
-
 def find_tokens(text: str) -> List[str]:
     """
     Extract tokens from the input text using a regular expression pattern.
@@ -67,11 +66,15 @@ def find_tokens(text: str) -> List[str]:
     Returns:
         List of extracted tokens.
     """
-    pattern = r'(\[|\]|\$\$|\$|\\\[|\\\]|\s+[\w]+|[\w]+|[.,:;()])'
-    tokens = re.findall(pattern, text)
-    # Normalize tokens that begin with multiple spaces.
-    tokens = [token.replace("  ", " ") if token.startswith("  ") else token for token in tokens if isinstance(token, str)]
-    return tokens
+    pattern = (
+    r'(\[|\]|\$\$|\$|\\\[|\\\]|\\\(|\\\)|\\|'       # match specific bracket tokens or a literal backslash
+    r'[\n\r\t]|'                                    # match any actual newline, carriage return, or tab
+    r'[ ]+[ ]|'                                     # match two or more spaces
+    r'[ \f\v]+[A-Za-z0-9]+|'                        # match leading whitespace (except newline) plus a word
+    r'[A-Za-z0-9]+|'                                # match words
+    r'[.,:;()!?+\-_*&^%#={}\'\"])'                  # match punctuation or quotes
+    )
+    return re.findall(pattern, text)
 
 
 def compute_token_weights(source_file: str, level: int) -> Dict[str, float]:
@@ -93,16 +96,16 @@ def compute_token_weights(source_file: str, level: int) -> Dict[str, float]:
     token_weights: Dict[str, List[float]] = {}
     # Define regular expressions for different levels of segmentation.
     split_patterns = [
-        r'(?<=\,|\.)+',  # Level 0: split on comma or dot
-        r'(?<=\.)+',     # Level 1: split on dot
-        r'(?<=\n)+'      # Level 2: split on newline
+        r'(?<=\,|\.|\n|\r)+',  # Level 0: split on comma, dot or newline
+        r'(?<=\.|\n|\r)+',     # Level 1: split on dot or newline
+        r'(?<=\n|\r)+'      # Level 2: split on newline
     ]
     pattern = split_patterns[level]
 
     with open(source_file, "r", encoding="utf-8") as file:
         for line in file:
             # Strip leading/trailing whitespace and split the line based on the chosen pattern.
-            segments = re.split(pattern, line.strip())
+            segments = re.split(pattern, line)
             for segment in segments:
                 tokens = find_tokens(segment)
                 token_count = len(tokens)
@@ -113,6 +116,11 @@ def compute_token_weights(source_file: str, level: int) -> Dict[str, float]:
                     token_weights.setdefault(token, []).append(idx / token_count)
     # Average the weights for each token.
     averaged_weights = {token: float(np.mean(weights)) for token, weights in token_weights.items()}
+    # Ensure newline characters are included, as they were removed during line processing.
+    if "\n" in averaged_weights:
+        print("Error", averaged_weights["\n"])
+    averaged_weights.setdefault("\n", 1)
+    averaged_weights.setdefault("\r", 1)
     return averaged_weights
 
 
