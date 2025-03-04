@@ -3,7 +3,7 @@ import tempfile
 import os
 import sys
 sys.path.insert(1,"./")
-from tokenizer.intuit import create_tokenizer, load_tokenizer
+from ilm.tokenizer.intuit import create_tokenizer, load_tokenizer
 
 class TestTokenizerIntegration(unittest.TestCase):
     def test_create_and_load_tokenizer(self):

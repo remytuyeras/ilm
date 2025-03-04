@@ -1,7 +1,7 @@
 import unittest
 import sys
 sys.path.insert(1,"./")
-from tokenizer.intuit import classify_tokens, weight_classified_tokens
+from ilm.tokenizer.intuit import classify_tokens, weight_classified_tokens
 
 class TestTokenClassification(unittest.TestCase):
     def test_classify_tokens(self):

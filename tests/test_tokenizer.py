@@ -1,7 +1,7 @@
 import unittest
 import sys
 sys.path.insert(1,"./")
-from tokenizer.intuit import generate_tokenizer, generate_detokenizer
+from ilm.tokenizer.intuit import generate_tokenizer, generate_detokenizer
 
 class TestTokenizerDetokenizer(unittest.TestCase):
     def test_tokenizer_detokenizer_roundtrip(self):

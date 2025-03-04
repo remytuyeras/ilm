@@ -1,6 +1,6 @@
 import sys
 sys.path.insert(1, "./")
-from tokenizer.intuit import create_tokenizer, load_tokenizer
+from ilm.tokenizer.intuit import create_tokenizer, load_tokenizer
 
 option = 2
 if option == 1:

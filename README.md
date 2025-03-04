@@ -84,7 +84,7 @@ To integrate the tokenizer with your projects, import the module from the `token
 ```python
 import sys
 sys.path.insert(1, "./")
-from tokenizer.intuit import create_tokenizer, load_tokenizer
+from ilm.tokenizer.intuit import create_tokenizer, load_tokenizer
 ```
 
 ### Creating a tokenizer
@@ -92,7 +92,7 @@ from tokenizer.intuit import create_tokenizer, load_tokenizer
 If you have your own dataset, place your training text file (e.g., `training_input.txt`) in the `data/` directory and create a tokenizer:
 
 ```python
-from tokenizer.intuit import create_tokenizer
+from ilm.tokenizer.intuit import create_tokenizer
 
 # Create tokenizer and save the mapping to a JSON file
 tokenizer, detokenizer = create_tokenizer(source_file="data/training_input.txt", target_file="data/tokenizer_v1.json")
@@ -103,7 +103,7 @@ tokenizer, detokenizer = create_tokenizer(source_file="data/training_input.txt",
 To load a previously saved tokenizer mapping:
 
 ```python
-from tokenizer.intuit import load_tokenizer
+from ilm.tokenizer.intuit import load_tokenizer
 
 # Load the tokenizer mapping from the JSON file
 tokenizer, detokenizer = load_tokenizer("data/tokenizer_v1.json")
@@ -126,7 +126,7 @@ Below is an example demonstrating how to integrate the tokenizer into a language
 ```python
 import sys
 sys.path.insert(1, "./")
-from tokenizer.intuit import create_tokenizer, load_tokenizer
+from ilm.tokenizer.intuit import create_tokenizer, load_tokenizer
 
 option = 2
 if option == 1:

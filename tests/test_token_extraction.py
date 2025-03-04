@@ -1,7 +1,7 @@
 import unittest
 import sys
 sys.path.insert(1,"./")
-from tokenizer.intuit import find_tokens
+from ilm.tokenizer.intuit import find_tokens
 
 class TestFindTokens(unittest.TestCase):
     def test_simple_sentence(self):
