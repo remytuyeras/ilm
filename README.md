@@ -61,8 +61,8 @@ This repository provides a set of tools to:
 
 ## Repository structure
 
-- **`tokenizer/intuit.py`**: contains the main functions for tokenization, including generating, saving, and loading tokenizers.
-- **`tokenizer/create_training.py`**: (optional) script to create a default training dataset (`training_input.txt`) from a parquet file.
+- **`ilm/tokenizer/intuit.py`**: contains the main functions for tokenization, including generating, saving, and loading tokenizers.
+- **`ilm/tokenizer/create_training.py`**: (optional) script to create a default training dataset (`training_input.txt`) from a parquet file.
 - **`tests/`**: contains unit tests for validating functionality.  
 - **`data/`**: place your training input and tokenizer mapping files here.
 - **`img/`**: contains images used in the documentation (e.g., the neural network diagram).
@@ -114,7 +114,7 @@ tokenizer, detokenizer = load_tokenizer("data/tokenizer_v1.json")
 If you do not have your own training dataset, you can create a default `training_input.txt` by running the provided script:
 
 ```bash
-python tokenizer/create_training.py
+python ilm/tokenizer/create_training.py
 ```
 
 This script reads data from the `garage-bAInd/Open-Platypus` [dataset](https://huggingface.co/datasets/garage-bAInd/Open-Platypus) and generates `training_input.txt` in the `data/` directory. Alternatively, you can use your own dataset.
@@ -154,7 +154,7 @@ print("Reconstructed Text:", reconstructed_text)
 
 1. **Prepare your data:**  Place your training text file (e.g., `training_input.txt`) in the `data/` directory. Use your own dataset or create one using:
    ```bash
-   python tokenizer/create_training.py
+   python ilm/tokenizer/create_training.py
    ```
 
 2. **Create the tokenizer:**  Generate the tokenizer mapping from your dataset. The mapping is stored in JSON format, so you can reload it later for inference or integration with your language model.
