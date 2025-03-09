@@ -1,3 +1,8 @@
+# Added by Remy
+sandbox/
+models/
+*.pth
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

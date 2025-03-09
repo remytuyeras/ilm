@@ -67,11 +67,13 @@ def find_tokens(text: str) -> List[str]:
         List of extracted tokens.
     """
     pattern = (
-    r'(\[|\]|\$\$|\$|\\\[|\\\]|\\\(|\\\)|\\|'       # match specific bracket tokens or a literal backslash
-    r'[\n\r\t]|'                                    # match any actual newline, carriage return, or tab
+    r'([\n\r\t]|'                                   # match any actual newline, carriage return, or tab
     r'[ ]+[ ]|'                                     # match two or more spaces
+    r'[ ]+\[|[ ]+\]|[ ]+\$\$|[ ]+\$|[ ]+\\\[|[ ]+\\\]|[ ]+\\\(|[ ]+\\\)|[ ]+\\|'
+    r'\[|\]|\$\$|\$|\\\[|\\\]|\\\(|\\\)|\\|'        # match specific bracket tokens or a literal backslash
     r'[ \f\v]+[A-Za-z0-9]+|'                        # match leading whitespace (except newline) plus a word
     r'[A-Za-z0-9]+|'                                # match words
+    r'[ \f\v]+[:;()!?+\-_*&^%#={}\'\"]+|'           # match punctuation or quotes preceeded by space, expected for '.' and ','
     r'[.,:;()!?+\-_*&^%#={}\'\"])'                  # match punctuation or quotes
     )
     return re.findall(pattern, text)
@@ -183,6 +185,13 @@ def generate_tokenizer(mapping: Dict[str, str]) -> Callable[[str], List[Optional
         return [mapping.get(token, None) for token in tokens]
     return tokenizer
 
+class MissingCode(object):
+    
+    def __init__(self, code):
+        self.code = code
+    
+    def __repr__(self):
+        return f"\033[94m<none:\033[90m{self.code}\033[94m>\033[0m"
 
 def generate_detokenizer(reverse_mapping: Dict[str, str]) -> Callable[[List[str]], List[Optional[str]]]:
     """
@@ -195,7 +204,7 @@ def generate_detokenizer(reverse_mapping: Dict[str, str]) -> Callable[[List[str]
         A function that converts a list of code strings back to their corresponding tokens.
     """
     def detokenizer(code_sequence: List[str]) -> List[Optional[str]]:
-        return [reverse_mapping.get(code, None) for code in code_sequence]
+        return [reverse_mapping.get(code, MissingCode(code)) for code in code_sequence]
     return detokenizer
 
 
