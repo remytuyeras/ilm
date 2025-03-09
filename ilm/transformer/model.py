@@ -148,7 +148,7 @@ class IntuinisticLanguageModel(nn.Module):
                 # Deterministic: choose the highest probability token
                 next_token = torch.argmax(last_logits, dim=-1, keepdim=True)
             else:
-                # Scale logits by the temperature.
+                # Scale logits by the temperature if non-zero.
                 #   - Lower temperatures (<1) make the softmax distribution sharper (more peaked),
                 #     so the highest logit dominates.
                 #   - Higher temperatures (>1) flatten the distribution, making the sampling more random.

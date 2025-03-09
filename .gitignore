@@ -1,5 +1,5 @@
 # Added by Remy
-sandbox/
+sandbox/try_*
 models/
 *.pth
 
