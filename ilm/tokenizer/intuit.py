@@ -120,7 +120,7 @@ def compute_token_weights(source_file: str, level: int) -> Dict[str, float]:
     averaged_weights = {token: float(np.mean(weights)) for token, weights in token_weights.items()}
     # Ensure newline characters are included, as they were removed during line processing.
     if "\n" in averaged_weights:
-        print("Error", averaged_weights["\n"])
+        print("Weight(\\n) =", averaged_weights["\n"])
     averaged_weights.setdefault("\n", 1)
     averaged_weights.setdefault("\r", 1)
     return averaged_weights
