@@ -1,8 +1,20 @@
 # Added by Remy
 sandbox/try_*
-models/
-*.pth
+models/*
+!models/
+!models/release/
+!models/release/*.pth
+!models/release/*.json
 docs/
+*.backup.*
+comparisons/outputs/
+comparisons/hf_cache/
+comparisons/reports/
+comparisons/outputs/backup/
+!comparisons/outputs/
+todo_*
+paper/main.tex
+paper/*.md
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

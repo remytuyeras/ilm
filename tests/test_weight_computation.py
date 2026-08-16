@@ -3,7 +3,7 @@ import tempfile
 import os
 import sys
 sys.path.insert(1,"./")
-from ilm.tokenizer.intuit import compute_token_weights
+from ilm.tokenizer.relative_position import compute_token_weights
 
 class TestComputeTokenWeights(unittest.TestCase):
     def test_weights_non_empty(self):

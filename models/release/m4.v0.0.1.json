@@ -1,0 +1,112 @@
+{
+  "schema_version": 1,
+  "release_metadata": {
+    "sanitized": true,
+    "source_metadata_path": "models/m4.v0.0.0.json",
+    "source_checkpoint_path": "models/m4.v0.0.1.pth",
+    "release_checkpoint_path": "models/release/m4.v0.0.1.pth",
+    "note": "Sanitized release metadata copy. Architecture, curriculum, losses, and parameter counts are preserved."
+  },
+  "root_model_path": "models/m4.v0.0.0.pth",
+  "latest_model_path": "models/m4.v0.0.1.pth",
+  "release_model_path": "models/release/m4.v0.0.1.pth",
+  "tokenizer_json": "data/tokenizer_embedding_cluster_v1.json",
+  "training_text": "data/training_old_english.txt",
+  "architecture": {
+    "vocab_size": 64,
+    "block_size": 60,
+    "word_block_size": 20,
+    "syllable_num": 3,
+    "embedding_dim": 300,
+    "head_size": 10,
+    "layer_num": 6,
+    "coordinate_lm_heads": true,
+    "word_row_transformer": true
+  },
+  "checkpoints": [
+    "models/m4.v0.0.0.pth",
+    "models/m4.v0.0.1.pth"
+  ],
+  "training_curriculum": [
+    {
+      "command": "create",
+      "input_model_path": null,
+      "output_model_path": "models/m4.v0.0.0.pth",
+      "semver_increment": null,
+      "tokenizer_json": "data/tokenizer_embedding_cluster_v1.json",
+      "training_text": "data/training_old_english.txt",
+      "device": "mps",
+      "architecture": {
+        "vocab_size": 64,
+        "block_size": 60,
+        "word_block_size": 20,
+        "syllable_num": 3,
+        "embedding_dim": 300,
+        "head_size": 10,
+        "layer_num": 6,
+        "coordinate_lm_heads": true,
+        "word_row_transformer": true
+      },
+      "training": {
+        "batch_size": 32,
+        "dropout": 0.5,
+        "epoch_num": 4000,
+        "lr": 0.001
+      },
+      "sampling": {
+        "completed_words": 300,
+        "syllable_num": 3,
+        "temperature": 1,
+        "top_k": 3,
+        "top_k_by_coordinate": null,
+        "temperature_by_coordinate": null,
+        "stream": true
+      },
+      "parameter_count": 6593592,
+      "losses": {
+        "train": 1.6184048652648926,
+        "validate": 1.7817245721817017
+      }
+    },
+    {
+      "command": "improve",
+      "input_model_path": "models/m4.v0.0.0.pth",
+      "output_model_path": "models/m4.v0.0.1.pth",
+      "semver_increment": "patch",
+      "tokenizer_json": "data/tokenizer_embedding_cluster_v1.json",
+      "training_text": "data/training_old_english.txt",
+      "device": "mps",
+      "architecture": {
+        "vocab_size": 64,
+        "block_size": 60,
+        "word_block_size": 20,
+        "syllable_num": 3,
+        "embedding_dim": 300,
+        "head_size": 10,
+        "layer_num": 6,
+        "coordinate_lm_heads": true,
+        "word_row_transformer": true
+      },
+      "training": {
+        "batch_size": 32,
+        "dropout": 0.5,
+        "epoch_num": 4000,
+        "lr": 0.001
+      },
+      "sampling": {
+        "completed_words": 300,
+        "syllable_num": 3,
+        "temperature": 0,
+        "top_k": 3,
+        "top_k_by_coordinate": null,
+        "temperature_by_coordinate": null,
+        "stream": true
+      },
+      "parameter_count": 6593592,
+      "losses": {
+        "train": 1.533186435699463,
+        "validate": 1.774308681488037
+      }
+    }
+  ]
+}

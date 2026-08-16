@@ -1,10 +1,9 @@
-from typing import Optional, Callable, List
+from typing import Optional, Callable, List, Sequence
 from tqdm import trange
 import random
 
 import torch
 import torch.nn as nn
-import torch.optim as optim
 from torch.nn import functional as F
 import numpy as np
 
@@ -42,18 +41,73 @@ def gather_tokens(tokens: List[int], syllable_num: int = 3) -> List[str]:
     
     return output
 
+
+def build_word_row_alignment(
+        start_positions: torch.Tensor,
+        block_size: int,
+        syllable_num: int,
+        word_block_size: int,
+        device=torch.device("cpu"),
+        ):
+    if syllable_num <= 0:
+        raise ValueError("syllable_num must be positive")
+    if block_size <= 0:
+        raise ValueError("block_size must be positive")
+    if word_block_size <= 0:
+        raise ValueError("word_block_size must be positive")
+
+    start_positions = start_positions.to(device=device, dtype=torch.long)
+    B = start_positions.shape[0]
+    local_positions = torch.arange(block_size, device=device)
+    corpus_row_indices = (start_positions[:, None] + local_positions[None, :]) // syllable_num
+    max_row_indices = corpus_row_indices[:, -1]
+    row_counts = torch.minimum(max_row_indices + 1, torch.full_like(max_row_indices, word_block_size))
+    row_offsets = torch.arange(word_block_size, device=device)
+    first_row_indices = max_row_indices - row_counts + 1
+    selected_rows = first_row_indices[:, None] + row_offsets[None, :]
+    row_is_active = row_offsets[None, :] < row_counts[:, None]
+
+    J_x = (
+        corpus_row_indices[:, None, :] == selected_rows[:, :, None]
+    ).float()
+    J_x = J_x * row_is_active[:, :, None].float()
+
+    has_visible_coordinate = J_x.bool().any(dim=-1)
+    weighted_positions = J_x * local_positions[None, None, :].float()
+    alpha = weighted_positions.max(dim=-1).values.long()
+
+    target_index = alpha
+    target_role = (start_positions[:, None] + alpha + 1) % syllable_num
+    target_mask = has_visible_coordinate & (target_index < block_size)
+
+    return J_x, target_index, target_role, target_mask
+
+
 class TrainingManager(object):
     
-    def __init__(self, raw_text, tokenizer, device=torch.device("cpu")):
+    def __init__(
+            self,
+            raw_text,
+            tokenizer,
+            device=torch.device("cpu"),
+            batch_size: int = 32,
+            block_size: int = 3 * 8,
+            syllable_num: int = 3,
+            return_start_positions: bool = False,
+            ):
+        if syllable_num <= 0:
+            raise ValueError("syllable_num must be positive")
         
         # raw = raw_text.split("\n\n")
         # random.shuffle(raw)
         # raw_text = "\n\n".join(raw)
         
         # Batch dimension: B
-        self.batch_size = 32
+        self.batch_size = batch_size
         # Time dimension: T
-        self.block_size = 3 * 8
+        self.block_size = block_size
+        self.syllable_num = syllable_num
+        self.return_start_positions = return_start_positions
 
         self.device = device
 
@@ -75,13 +129,23 @@ class TrainingManager(object):
                 
     def get_batch(self, split):
         data = self.training_data if split == "train" else self.validation_data
+        data_offset = 0 if split == "train" else self.n_training
+
+        max_index = len(data) - self.block_size
+        if max_index <= 0:
+            raise ValueError("dataset split is too small for the configured block_size")
 
         # random indices accross document
-        indices = torch.randint(len(data) - self.block_size, (self.batch_size,))
+        indices = torch.randint(max_index, (self.batch_size,))
 
         # size (B, T) = Batch dimension, Time dimension
         x = torch.stack([data[i:i+self.block_size] for i in indices])
         y = torch.stack([data[i+1:i+1+self.block_size] for i in indices])
+
+        if self.return_start_positions:
+            absolute_indices = data_offset + indices
+            start_positions = (absolute_indices % self.syllable_num).to(self.device)
+            return x, y, start_positions
 
         return x, y
     
@@ -121,9 +185,9 @@ class ILMHead(nn.Module):
         v: torch.Tensor = self.value(batched_context) # (B, T, H)
 
         weights: torch.Tensor = q @ k.transpose(-2,-1) / (self.head_size ** 0.5) # (B, T, T)
-        
+
         weights = weights.masked_fill(
-            self.tril[:T,:T] == 0, 
+            self.tril[:T,:T] == 0,
             float("-inf")) # Decoder structure
         
         weights = F.softmax(weights, dim=-1) # (B, T)
@@ -145,9 +209,12 @@ class ILMMultiHead(nn.Module):
         self.heads = nn.ModuleList([ILMHead(embedding_dim, block_size, head_size, device, dropout) for _ in range(head_num)]) 
         self.proj = nn.Linear(embedding_dim, embedding_dim).to(device)
         self.dropout = nn.Dropout(dropout)
-       
-    def forward(self,input_emb):
-        emb = torch.cat([ h(input_emb)for h in self.heads], dim=-1)
+
+    def forward(
+            self,
+            input_emb,
+            ):
+        emb = torch.cat([h(input_emb) for h in self.heads], dim=-1)
         emb = self.proj(emb)
         emb = self.dropout(emb)
         return emb
@@ -201,17 +268,48 @@ class IntuinisticLanguageModel(nn.Module):
                  head_size=16,
                  layer_num=4,
                  device=torch.device("cpu"),
-                 dropout=0.2):
+                 dropout=0.2,
+                 syllable_num: int = 3,
+                 word_block_size: Optional[int] = None,
+                 head_num: int = 4,
+                 coordinate_token_embeddings: bool = False,
+                 coordinate_lm_heads: bool = False,
+                 word_row_transformer: bool = False):
         
         super().__init__()
+        if syllable_num <= 0:
+            raise ValueError("syllable_num must be positive")
+        if block_size <= 0:
+            raise ValueError("block_size must be positive")
+        if head_num <= 0:
+            raise ValueError("head_num must be positive")
+        if embedding_dim % head_num != 0:
+            raise ValueError("embedding_dim must be divisible by head_num")
+        if word_row_transformer:
+            coordinate_lm_heads = True
         self.vocab_size = vocab_size
         self.embedding_dim = embedding_dim
         self.block_size = block_size
-        self.head_size = head_size
+        self.head_num = head_num
+        # Head width follows the model width and number of attention heads.
+        self.head_size = embedding_dim // head_num
+        self.syllable_num = syllable_num
+        self.coordinate_token_embeddings = coordinate_token_embeddings
+        self.coordinate_lm_heads = coordinate_lm_heads
+        self.word_row_transformer = word_row_transformer
+
+        if word_block_size is None and block_size % syllable_num == 0:
+            word_block_size = block_size // syllable_num
+        if word_row_transformer and word_block_size is None:
+            raise ValueError("word_row_transformer=True requires block_size to be divisible by syllable_num")
+        self.word_block_size = word_block_size
 
         self.device=device
         
-        self.token_embedding_table = nn.Embedding(vocab_size, embedding_dim).to(self.device)
+        token_embedding_vocab_size = vocab_size
+        if self.coordinate_token_embeddings:
+            token_embedding_vocab_size = syllable_num * vocab_size
+        self.token_embedding_table = nn.Embedding(token_embedding_vocab_size, embedding_dim).to(self.device)
         self.pos_embedding_table = nn.Embedding(block_size, embedding_dim).to(self.device)
 
         # self.sa_head = ILMHead(
@@ -231,7 +329,7 @@ class IntuinisticLanguageModel(nn.Module):
 
         self.blocks = nn.Sequential(
             *[ILMBlock(
-                head_num=4,
+                head_num=self.head_num,
                 embedding_dim=embedding_dim,
                 block_size=block_size,
                 device=device,
@@ -240,39 +338,167 @@ class IntuinisticLanguageModel(nn.Module):
         
         self.ln_f = nn.LayerNorm(embedding_dim).to(device)
 
-        self.lm_head = nn.Linear(embedding_dim, vocab_size).to(self.device)
+        if self.coordinate_lm_heads:
+            self.lm_heads = nn.ModuleList([
+                nn.Linear(embedding_dim, vocab_size).to(self.device)
+                for _ in range(syllable_num)
+            ])
+        else:
+            self.lm_head = nn.Linear(embedding_dim, vocab_size).to(self.device)
 
         # print(self.token_embedding_table(torch.tensor([0,1], dtype=torch.long)))
 
-    def forward(self, batched_context: torch.Tensor , batched_targets: Optional[torch.Tensor] = None):
+    def _standard_loss(self, batched_logits: torch.Tensor, batched_targets: torch.Tensor):
+        B, T, C = batched_logits.shape # Batch, Time, Channel
+        # concatenate logits C-vectors ovar all B-batches
+        flattened_logits = batched_logits.view(B * T, C).to(self.device)
+        # concatenate token T-tuples over all B-batches
+        flattened_targets = batched_targets.view(B * T).to(self.device)
+        # compute cross_entropy loss where each entry of flattened_targets becomes the binary C-vector
+        return F.cross_entropy(flattened_logits, flattened_targets)
+
+    def _coordinate_target_roles(self, start_positions: torch.Tensor, T: int):
+        if start_positions is None:
+            raise ValueError("coordinate_lm_heads=True requires start_positions")
+        start_positions = start_positions.to(self.device, dtype=torch.long)
+        if start_positions.ndim != 1:
+            raise ValueError("start_positions must have shape (B,)")
+        positions = torch.arange(T, device=self.device)
+        return (start_positions[:, None] + positions[None, :] + 1) % self.syllable_num
+
+    def _coordinate_input_roles(self, start_positions: torch.Tensor, T: int):
+        if start_positions is None:
+            raise ValueError("coordinate_token_embeddings=True requires start_positions")
+        start_positions = start_positions.to(self.device, dtype=torch.long)
+        if start_positions.ndim != 1:
+            raise ValueError("start_positions must have shape (B,)")
+        positions = torch.arange(T, device=self.device)
+        return (start_positions[:, None] + positions[None, :]) % self.syllable_num
+
+    def _token_embeddings(
+            self,
+            batched_context: torch.Tensor,
+            start_positions: Optional[torch.Tensor],
+            ):
+        if not self.coordinate_token_embeddings:
+            return self.token_embedding_table(batched_context)
+
+        input_roles = self._coordinate_input_roles(
+            start_positions=start_positions,
+            T=batched_context.shape[1],
+        )
+        role_token_indices = input_roles * self.vocab_size + batched_context
+        return self.token_embedding_table(role_token_indices)
+
+    def _coordinate_logits(self, batched_emb: torch.Tensor, start_positions: torch.Tensor):
+        B, T, _ = batched_emb.shape
+        target_roles = self._coordinate_target_roles(start_positions=start_positions, T=T)
+        return self._coordinate_logits_for_roles(
+            batched_emb=batched_emb,
+            target_roles=target_roles,
+        )
+
+    def _coordinate_logits_for_roles(self, batched_emb: torch.Tensor, target_roles: torch.Tensor):
+        B, T, _ = batched_emb.shape
+        if target_roles.shape[0] != B:
+            raise ValueError("target_roles must have one row per batch item")
+        if target_roles.shape[1] != T:
+            raise ValueError("target_roles must have one role per output position")
+
+        logits_by_head = torch.stack(
+            [head(batched_emb) for head in self.lm_heads],
+            dim=2,
+        )  # (B, T, S, V)
+        head_index = target_roles[:, :, None, None].expand(-1, -1, 1, self.vocab_size)
+        return logits_by_head.gather(dim=2, index=head_index).squeeze(2)
+
+    def _word_row_prefix_loss(
+            self,
+            batched_logits: torch.Tensor,
+            batched_targets: torch.Tensor,
+            J_x: torch.Tensor,
+            ):
+        B, T, V = batched_logits.shape
+        if batched_targets.shape[:2] != (B, T):
+            raise ValueError("word-row prefix loss requires targets with shape (B, T)")
+        prefix_mask = J_x.bool().any(dim=1)
+        valid_logits = batched_logits[prefix_mask]
+        valid_targets = batched_targets[prefix_mask]
+        if valid_logits.numel() == 0:
+            raise ValueError("word-row prefix loss has no valid targets")
+        return F.cross_entropy(valid_logits.reshape(-1, V), valid_targets.reshape(-1))
+
+    def forward(
+            self,
+            batched_context: torch.Tensor,
+            batched_targets: Optional[torch.Tensor] = None,
+            start_positions: Optional[torch.Tensor] = None,
+            ):
         # self.eval()
         
         T = batched_context.shape[1]
         # batched_context: (B, T) -> batched_tok_emb: (B, T, C)
-        batched_tok_emb: torch.Tensor = self.token_embedding_table(batched_context)
+        batched_tok_emb: torch.Tensor = self._token_embeddings(
+            batched_context=batched_context,
+            start_positions=start_positions,
+        )
         # position vectors  -> batched_tok_emb: (T, C)
         batched_pos_emb: torch.Tensor = self.pos_embedding_table(torch.arange(T, device=self.device).to(self.device))
         # embedding and postiond 
         batched_emb = batched_tok_emb + batched_pos_emb
+
         # self attention
         batched_emb = self.blocks(batched_emb)
         batched_emb = self.ln_f(batched_emb)
-        # batched_embeddings: (B, T, C) -> batched_logits: (B, T, V) ; V=vocabulary
-        batched_logits: torch.Tensor = self.lm_head(batched_emb)
+        if self.coordinate_lm_heads:
+            batched_logits = self._coordinate_logits(
+                batched_emb=batched_emb,
+                start_positions=start_positions,
+            )
+        else:
+            batched_logits: torch.Tensor = self.lm_head(batched_emb)
         
         if batched_targets is None:
             loss = None
-        
+
         else:
-            B, T, C = batched_logits.shape # Batch, Time, Channel
-            # concatenate logits C-vectors ovar all B-batches
-            flattened_logits = batched_logits.view(B * T, C).to(self.device)
-            # concatenate token T-tuples over all B-batches
-            flattened_targets = batched_targets.view(B * T).to(self.device)
-            # compute cross_entropy loss where each entry of flattened_targets becomes the binary C-vector
-            loss = F.cross_entropy(flattened_logits, flattened_targets)
+            if self.word_row_transformer:
+                if start_positions is None:
+                    raise ValueError("word_row_transformer=True requires start_positions")
+                J_x, _, _, _ = build_word_row_alignment(
+                    start_positions=start_positions,
+                    block_size=T,
+                    syllable_num=self.syllable_num,
+                    word_block_size=self.word_block_size,
+                    device=self.device,
+                )
+                loss = self._word_row_prefix_loss(
+                    batched_logits=batched_logits,
+                    batched_targets=batched_targets,
+                    J_x=J_x,
+                )
+            else:
+                loss = self._standard_loss(
+                    batched_logits=batched_logits,
+                    batched_targets=batched_targets,
+                )
         
         return batched_logits, loss
+
+    def _unpack_training_batch(self, batch):
+        if (
+                self.coordinate_token_embeddings
+                or self.coordinate_lm_heads
+                or self.word_row_transformer
+                ):
+            if len(batch) != 3:
+                raise ValueError(
+                    "this model requires TrainingManager(return_start_positions=True)"
+                )
+            return batch
+
+        x, y = batch[:2]
+        return x, y, None
     
 
     @torch.no_grad()
@@ -283,8 +509,8 @@ class IntuinisticLanguageModel(nn.Module):
         for split in ["train", "validate"]:
             losses = torch.zeros(eval_iters).to(self.device)
             for k in range(eval_iters):
-                x, y = manager.get_batch(split)
-                _, loss = self(x,y); loss: torch.Tensor
+                x, y, start_positions = self._unpack_training_batch(manager.get_batch(split))
+                _, loss = self(x, y, start_positions=start_positions); loss: torch.Tensor
                 losses[k] = loss.item()
             out[split] = losses.mean()
         self.train()
@@ -303,8 +529,8 @@ class IntuinisticLanguageModel(nn.Module):
         
         for bar_step in progress_bar:
             self.train()
-            x, y = manager.get_batch("train")
-            logits, loss = self(x, y); loss: torch.Tensor
+            x, y, start_positions = self._unpack_training_batch(manager.get_batch("train"))
+            logits, loss = self(x, y, start_positions=start_positions); loss: torch.Tensor
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
@@ -313,6 +539,11 @@ class IntuinisticLanguageModel(nn.Module):
                 losses = self.estimate_loss(manager=manager)
                 loss_msg = f"loss_trn:{losses['train']:.4f}, loss_val:{losses['validate']:.4f}"
                 progress_bar.set_postfix(loss=loss_msg)
+
+        losses = self.estimate_loss(manager=manager)
+        loss_msg = f"loss_trn:{losses['train']:.4f}, loss_val:{losses['validate']:.4f}"
+        progress_bar.set_postfix(loss=loss_msg)
+        return {split: float(loss.item()) for split, loss in losses.items()}
             
 
     def save_model(self, model_path = "iml_model.pth"):
@@ -329,22 +560,81 @@ class IntuinisticLanguageModel(nn.Module):
         print(f"Model weights loaded from {model_path}")
 
 
-    def generate(self, batched_context: torch.Tensor, max_new_tokens: int, temperature: float = 0, top_k: Optional[int] = None): 
+    def generate(
+            self,
+            batched_context: torch.Tensor,
+            max_new_tokens: int,
+            temperature: float = 0,
+            top_k: Optional[int] = None,
+            syllable_num: int = 3,
+            top_k_by_coordinate: Optional[Sequence[int]] = None,
+            temperature_by_coordinate: Optional[Sequence[float]] = None,
+            token_callback: Optional[Callable[[int], None]] = None,
+            show_progress: bool = True,
+            ):
         '''
         Understood
         '''
+        if syllable_num <= 0:
+            raise ValueError("syllable_num must be positive")
+        if (
+                self.coordinate_token_embeddings
+                or self.coordinate_lm_heads
+                or self.word_row_transformer
+                ) and syllable_num != self.syllable_num:
+            raise ValueError("syllable_num must match the model syllable_num in coordinate modes")
+        if top_k is not None and top_k <= 0:
+            raise ValueError("top_k must be positive when provided")
+        if temperature < 0:
+            raise ValueError("temperature must be zero or positive")
+        if top_k_by_coordinate is not None and len(top_k_by_coordinate) != syllable_num:
+            raise ValueError("top_k_by_coordinate must match syllable_num")
+        if top_k_by_coordinate is not None and any(value <= 0 for value in top_k_by_coordinate):
+            raise ValueError("top_k_by_coordinate values must be positive")
+        if temperature_by_coordinate is not None and len(temperature_by_coordinate) != syllable_num:
+            raise ValueError("temperature_by_coordinate must match syllable_num")
+        if temperature_by_coordinate is not None and any(value < 0 for value in temperature_by_coordinate):
+            raise ValueError("temperature_by_coordinate values must be zero or positive")
+        if token_callback is not None and batched_context.shape[0] != 1:
+            raise ValueError("token_callback only supports batch size 1")
+
         self.eval()
         batched_context_ = batched_context.to(self.device)
-        progress_bar = trange(max_new_tokens, desc="Inference")
+        progress_bar = trange(max_new_tokens, desc="Inference") if show_progress else range(max_new_tokens)
         # single_context should be (B, T) where T grows
         for _ in progress_bar:
+            coordinate_index = batched_context_.shape[1] % syllable_num
+            step_temperature = temperature
+            if temperature_by_coordinate is not None:
+                step_temperature = temperature_by_coordinate[coordinate_index]
+            step_top_k = top_k
+            if top_k_by_coordinate is not None:
+                step_top_k = top_k_by_coordinate[coordinate_index]
+
             # give batched logits and loss
-            batched_logits, loss = self(batched_context_[: , -self.block_size:])
+            batched_context_window = batched_context_[:, -self.block_size:]
+            start_positions = None
+            if (
+                    self.coordinate_token_embeddings
+                    or self.coordinate_lm_heads
+                    or self.word_row_transformer
+                    ):
+                context_start = batched_context_.shape[1] - batched_context_window.shape[1]
+                start_positions = torch.full(
+                    (batched_context_window.shape[0],),
+                    context_start % self.syllable_num,
+                    dtype=torch.long,
+                    device=self.device,
+                )
+            batched_logits, loss = self(
+                batched_context_window,
+                start_positions=start_positions,
+            )
             # get the logits (prediction) for the last context token
             last_logits = batched_logits[:,-1,:]
    
             # compute associated probability distribution(s) (used in cross entropy)
-            if temperature == 0:
+            if step_temperature == 0:
                 # Deterministic: choose the highest probability token
                 next_token = torch.argmax(last_logits, dim=-1, keepdim=True)
             else:
@@ -352,11 +642,11 @@ class IntuinisticLanguageModel(nn.Module):
                 #   - Lower temperatures (<1) make the softmax distribution sharper (more peaked),
                 #     so the highest logit dominates.
                 #   - Higher temperatures (>1) flatten the distribution, making the sampling more random.
-                scaled_logits = last_logits / temperature
+                scaled_logits = last_logits / step_temperature
 
-                if top_k is not None:
-                    top_k = min(top_k, scaled_logits.shape[-1])
-                    top_values, _ = torch.topk(scaled_logits, k=top_k)
+                if step_top_k is not None:
+                    step_top_k = min(step_top_k, scaled_logits.shape[-1])
+                    top_values, _ = torch.topk(scaled_logits, k=step_top_k)
                     threshold = top_values[:, -1].unsqueeze(-1)
                     scaled_logits = scaled_logits.masked_fill(scaled_logits < threshold, float("-inf"))
 
@@ -373,5 +663,7 @@ class IntuinisticLanguageModel(nn.Module):
 
             # extend the context to (B, T+1)
             batched_context_ = torch.cat((batched_context_, next_token), dim=1)
+            if token_callback is not None:
+                token_callback(int(next_token[0, 0].item()))
 
         return batched_context_

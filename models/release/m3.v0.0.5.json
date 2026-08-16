@@ -1,0 +1,238 @@
+{
+  "schema_version": 1,
+  "release_metadata": {
+    "sanitized": true,
+    "source_metadata_path": "models/m3.v0.0.0.json",
+    "source_checkpoint_path": "models/m3.v0.0.5.pth",
+    "release_checkpoint_path": "models/release/m3.v0.0.5.pth",
+    "note": "Sanitized release metadata copy. Architecture, curriculum, losses, and parameter counts are preserved."
+  },
+  "root_model_path": "models/m3.v0.0.0.pth",
+  "latest_model_path": "models/m3.v0.0.5.pth",
+  "release_model_path": "models/release/m3.v0.0.5.pth",
+  "tokenizer_json": "data/tokenizer_embedding_cluster_v1.json",
+  "training_text": "data/training_old_english.txt",
+  "architecture": {
+    "vocab_size": 64,
+    "block_size": 60,
+    "embedding_dim": 300,
+    "head_size": 10,
+    "layer_num": 6
+  },
+  "checkpoints": [
+    "models/m3.v0.0.0.pth",
+    "models/m3.v0.0.1.pth",
+    "models/m3.v0.0.2.pth",
+    "models/m3.v0.0.3.pth",
+    "models/m3.v0.0.4.pth",
+    "models/m3.v0.0.5.pth"
+  ],
+  "training_curriculum": [
+    {
+      "command": "create",
+      "input_model_path": null,
+      "output_model_path": "models/m3.v0.0.0.pth",
+      "semver_increment": null,
+      "tokenizer_json": "data/tokenizer_embedding_cluster_v1.json",
+      "training_text": "data/training_old_english.txt",
+      "device": "mps",
+      "architecture": {
+        "vocab_size": 64,
+        "block_size": 60,
+        "embedding_dim": 300,
+        "head_size": 10,
+        "layer_num": 6
+      },
+      "training": {
+        "batch_size": 32,
+        "dropout": 0.5,
+        "epoch_num": 4000,
+        "lr": 0.001
+      },
+      "parameter_count": 6555064,
+      "losses": {
+        "train": 1.648116111755371,
+        "validate": 1.8185843229293823
+      }
+    },
+    {
+      "command": "improve",
+      "input_model_path": "models/m3.v0.0.0.pth",
+      "output_model_path": "models/m3.v0.0.1.pth",
+      "semver_increment": "patch",
+      "tokenizer_json": "data/tokenizer_embedding_cluster_v1.json",
+      "training_text": "data/training_old_english.txt",
+      "device": "mps",
+      "architecture": {
+        "vocab_size": 64,
+        "block_size": 60,
+        "embedding_dim": 300,
+        "head_size": 10,
+        "layer_num": 6
+      },
+      "training": {
+        "batch_size": 32,
+        "dropout": 0.6,
+        "epoch_num": 4000,
+        "lr": 0.001
+      },
+      "parameter_count": 6555064,
+      "losses": {
+        "train": 1.625075101852417,
+        "validate": 1.8221664428710938
+      }
+    },
+    {
+      "command": "improve",
+      "input_model_path": "models/m3.v0.0.1.pth",
+      "output_model_path": "models/m3.v0.0.2.pth",
+      "semver_increment": "patch",
+      "tokenizer_json": "data/tokenizer_embedding_cluster_v1.json",
+      "training_text": "data/training_old_english.txt",
+      "device": "mps",
+      "architecture": {
+        "vocab_size": 64,
+        "block_size": 60,
+        "embedding_dim": 300,
+        "head_size": 10,
+        "layer_num": 6
+      },
+      "training": {
+        "batch_size": 32,
+        "dropout": 0.5,
+        "epoch_num": 4000,
+        "lr": 0.001
+      },
+      "sampling": {
+        "completed_words": 100,
+        "temperature": 0.8,
+        "top_k": 10
+      },
+      "parameter_count": 6555064,
+      "losses": {
+        "train": 1.5409293174743652,
+        "validate": 1.7825579643249512
+      }
+    },
+    {
+      "command": "improve",
+      "input_model_path": "models/m3.v0.0.2.pth",
+      "output_model_path": "models/m3.v0.0.3.pth",
+      "semver_increment": "patch",
+      "tokenizer_json": "data/tokenizer_embedding_cluster_v1.json",
+      "training_text": "data/training_old_english.txt",
+      "device": "mps",
+      "architecture": {
+        "vocab_size": 64,
+        "block_size": 60,
+        "embedding_dim": 300,
+        "head_size": 10,
+        "layer_num": 6
+      },
+      "training": {
+        "batch_size": 32,
+        "dropout": 0.5,
+        "epoch_num": 4000,
+        "lr": 0.001
+      },
+      "sampling": {
+        "completed_words": 200,
+        "temperature": 1,
+        "top_k": 10
+      },
+      "parameter_count": 6555064,
+      "losses": {
+        "train": 1.5126025676727295,
+        "validate": 1.794032096862793
+      }
+    },
+    {
+      "command": "improve",
+      "input_model_path": "models/m3.v0.0.3.pth",
+      "output_model_path": "models/m3.v0.0.4.pth",
+      "semver_increment": "patch",
+      "tokenizer_json": "data/tokenizer_embedding_cluster_v1.json",
+      "training_text": "data/training_old_english.txt",
+      "device": "mps",
+      "architecture": {
+        "vocab_size": 64,
+        "block_size": 60,
+        "embedding_dim": 300,
+        "head_size": 10,
+        "layer_num": 6
+      },
+      "training": {
+        "batch_size": 32,
+        "dropout": 0.4,
+        "epoch_num": 2000,
+        "lr": 0.0002
+      },
+      "sampling": {
+        "completed_words": 300,
+        "syllable_num": 3,
+        "temperature": 1,
+        "top_k": 3,
+        "top_k_by_coordinate": [
+          3,
+          4,
+          6
+        ],
+        "temperature_by_coordinate": [
+          1,
+          0.95,
+          0.8
+        ],
+        "stream": false
+      },
+      "parameter_count": 6555064,
+      "losses": {
+        "train": 1.4604370594024658,
+        "validate": 1.7447824478149414
+      }
+    },
+    {
+      "command": "improve",
+      "input_model_path": "models/m3.v0.0.4.pth",
+      "output_model_path": "models/m3.v0.0.5.pth",
+      "semver_increment": "patch",
+      "tokenizer_json": "data/tokenizer_embedding_cluster_v1.json",
+      "training_text": "data/training_old_english.txt",
+      "device": "mps",
+      "architecture": {
+        "vocab_size": 64,
+        "block_size": 60,
+        "embedding_dim": 300,
+        "head_size": 10,
+        "layer_num": 6
+      },
+      "training": {
+        "batch_size": 32,
+        "dropout": 0.4,
+        "epoch_num": 1000,
+        "lr": 0.0001
+      },
+      "sampling": {
+        "completed_words": 300,
+        "syllable_num": 3,
+        "temperature": 1,
+        "top_k": 3,
+        "top_k_by_coordinate": [
+          3,
+          4,
+          6
+        ],
+        "temperature_by_coordinate": [
+          1,
+          0.95,
+          0.8
+        ],
+        "stream": false
+      },
+      "parameter_count": 6555064,
+      "losses": {
+        "train": 1.4529708623886108,
+        "validate": 1.7765617370605469
+      }
+    }
+  ]
+}

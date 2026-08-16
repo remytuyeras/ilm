@@ -1,7 +1,7 @@
 import unittest
 import sys
 sys.path.insert(1,"./")
-from ilm.tokenizer.intuit import force_json_extension
+from ilm.tokenizer.core import force_json_extension
 
 class TestForceJsonExtension(unittest.TestCase):
     def test_extension_added(self):

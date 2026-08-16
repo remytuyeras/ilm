@@ -1,0 +1,66 @@
+# ILM qualitative comparison prompts.
+# Lines beginning with # are ignored by comparisons/compare_generation.py.
+#
+# This set is designed to test:
+# - Shakespeare/stage formatting
+# - royal and family attractors
+# - action and battle language
+# - short conversational continuations
+# - negation and modal logic
+# - prompt adherence
+# - failure cases around modern or plain English phrasing
+
+# Core prompts used often during ILM experiments
+The queen
+Where is the queen
+My lord
+I would not
+We will go battle against our enemies
+
+# Royal/family attractor tests
+The king is
+The queen arrived
+My father's brother
+The prince of York
+The crown belongs to
+Her majesty will
+
+# Dialogue and stage-rhythm tests
+ROMEO:
+JULIET:
+KING RICHARD III:
+CORIOLANUS:
+Enter the queen
+What says my lord
+
+# Action and plot-motion tests
+We march at dawn
+The soldiers are ready
+The city gates are closed
+I will defend the crown
+Go tell the duke
+Bring me the letter
+
+# Negation, intention, and modality tests
+I cannot
+I will not
+You shall not
+We must
+If I should
+Would you
+
+# Short generic prompts
+Love is
+Death comes
+The world is
+My heart
+I know
+Tell me
+
+# Plain English / stress tests
+I want to go home
+Where are my friends
+This is not true
+Can you help me
+The people are afraid
+We need a plan
