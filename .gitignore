@@ -5,16 +5,19 @@ models/*
 !models/release/
 !models/release/*.pth
 !models/release/*.json
-docs/
+reflect/
 *.backup.*
+data/cache/*
+!data/cache/.gitignore
+experiments/**/runs/*
+!experiments/**/runs/.gitkeep
 comparisons/outputs/
 comparisons/hf_cache/
 comparisons/reports/
 comparisons/outputs/backup/
 !comparisons/outputs/
 todo_*
-paper/main.tex
-paper/*.md
+papers/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

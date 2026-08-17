@@ -53,13 +53,13 @@ python tests/quickstart.py
 This runs in load mode. It loads:
 
 ```text
-data/tokenizer_v2.json
+data/tokenizers/tokenizer_v2.json
 ```
 
 and reads line `20` from:
 
 ```text
-data/training_old_english.txt
+data/corpora/training_old_english.txt
 ```
 
 It prints:
@@ -96,8 +96,8 @@ Load the current relative-position tokenizer:
 ```bash
 python tests/quickstart.py \
   --mode load \
-  --source-file data/training_old_english.txt \
-  --target-file data/tokenizer_v2.json
+  --source-file data/corpora/training_old_english.txt \
+  --target-file data/tokenizers/tokenizer_v2.json
 ```
 
 Load an embedding-cluster tokenizer:
@@ -105,8 +105,8 @@ Load an embedding-cluster tokenizer:
 ```bash
 python tests/quickstart.py \
   --mode load \
-  --source-file data/training_old_english.txt \
-  --target-file data/tokenizer_embedding_cluster_v1.json
+  --source-file data/corpora/training_old_english.txt \
+  --target-file data/tokenizers/tokenizer_embedding_cluster_v1.json
 ```
 
 Loading does not care which method created the JSON. It only needs the saved `direct` and `reverse` mappings.
@@ -121,8 +121,8 @@ Build it with:
 python tests/quickstart.py \
   --mode build \
   --method relative-position \
-  --source-file data/training_old_english.txt \
-  --target-file data/tokenizer_v2.json
+  --source-file data/corpora/training_old_english.txt \
+  --target-file data/tokenizers/tokenizer_v2.json
 ```
 
 SDK equivalent:
@@ -131,8 +131,8 @@ SDK equivalent:
 from ilm.tokenizer import create_tokenizer
 
 tokenizer, detokenizer = create_tokenizer(
-    source_file="data/training_old_english.txt",
-    target_file="data/tokenizer_v2.json",
+    source_file="data/corpora/training_old_english.txt",
+    target_file="data/tokenizers/tokenizer_v2.json",
     method="relative-position",
 )
 ```
@@ -171,8 +171,8 @@ Build it with:
 python tests/quickstart.py \
   --mode build \
   --method embedding-cluster \
-  --source-file data/training_old_english.txt \
-  --target-file data/tokenizer_embedding_cluster_v1.json \
+  --source-file data/corpora/training_old_english.txt \
+  --target-file data/tokenizers/tokenizer_embedding_cluster_v1.json \
   --cluster-method spherical-kmeans \
   --reduced-dim 10 \
   --embedding-batch-size 512 \
@@ -208,13 +208,13 @@ SDK equivalent:
 from ilm.tokenizer import create_tokenizer
 
 tokenizer, detokenizer = create_tokenizer(
-    source_file="data/training_old_english.txt",
-    target_file="data/tokenizer_embedding_cluster_v1.json",
+    source_file="data/corpora/training_old_english.txt",
+    target_file="data/tokenizers/tokenizer_embedding_cluster_v1.json",
     method="embedding-cluster",
     cluster_method="spherical-kmeans",
     reduced_dim=10,
     embedding_batch_size=512,
-    semantic_spelling_file="data/tokenizer_embedding_cluster_v1.semantic.json",
+    semantic_spelling_file="data/tokenizers/tokenizer_embedding_cluster_v1.semantic.json",
 )
 ```
 
@@ -229,13 +229,13 @@ Embedding-cluster builds can also write a human-readable JSON file that expresse
 With no path, this derives the file name from `--target-file`. For:
 
 ```text
-data/tokenizer_embedding_cluster_v1.json
+data/tokenizers/tokenizer_embedding_cluster_v1.json
 ```
 
 the semantic spelling file is:
 
 ```text
-data/tokenizer_embedding_cluster_v1.semantic.json
+data/tokenizers/tokenizer_embedding_cluster_v1.semantic.json
 ```
 
 The file is a plain mapping, not a tokenizer object with `direct` and `reverse`:
@@ -314,16 +314,21 @@ When `--plot-pca-3d` is also enabled, the semantic spelling file is saved before
 By default, embeddings are cached next to the target JSON. For:
 
 ```text
-data/tokenizer_embedding_cluster_v1.json
+data/tokenizers/tokenizer_embedding_cluster_v1.json
 ```
 
 the default cache is:
 
 ```text
-data/tokenizer_embedding_cluster_v1.embeddings.npz
+data/tokenizers/tokenizer_embedding_cluster_v1.embeddings.npz
 ```
 
 The `.json` file is the actual tokenizer. The `.npz` file is only a numeric embedding cache so you can retry PCA/clustering choices without paying for embeddings again.
+
+For a released tokenizer, prefer an explicit cache location such as
+`data/cache/tokenizer_embedding_cluster_v1.embeddings.npz`. The repository does
+not commit embedding caches, while it does retain portable tokenizer JSON files
+and selected semantic-label sidecars.
 
 `--refresh-cache` ignores the existing `.npz` cache and calls the embedding API again.
 
@@ -472,8 +477,9 @@ Use `--plot-sample-size 0` to plot every token point.
 python tests/quickstart.py \
   --mode build \
   --method embedding-cluster \
-  --source-file data/training_old_english.txt \
-  --target-file data/tokenizer_embedding_cluster_test.json \
+  --source-file data/corpora/training_old_english.txt \
+  --target-file data/tokenizers/tokenizer_embedding_cluster_test.json \
+  --cache-file data/cache/tokenizer_embedding_cluster_test.embeddings.npz \
   --max-tokens 5000
 ```
 
@@ -482,7 +488,7 @@ python tests/quickstart.py \
 Build a normal tokenizer:
 
 ```bash
-python tests/quickstart.py --mode build --method relative-position --source-file data/training_old_english.txt --target-file data/tokenizer_v2.json
+python tests/quickstart.py --mode build --method relative-position --source-file data/corpora/training_old_english.txt --target-file data/tokenizers/tokenizer_v2.json
 ```
 
 Try embedding-cluster on a small vocabulary:
@@ -491,8 +497,9 @@ Try embedding-cluster on a small vocabulary:
 python tests/quickstart.py \
   --mode build \
   --method embedding-cluster \
-  --source-file data/training_old_english.txt \
-  --target-file data/tokenizer_embedding_cluster_test.json \
+  --source-file data/corpora/training_old_english.txt \
+  --target-file data/tokenizers/tokenizer_embedding_cluster_test.json \
+  --cache-file data/cache/tokenizer_embedding_cluster_test.embeddings.npz \
   --cluster-method spherical-kmeans \
   --reduced-dim 10 \
   --embedding-batch-size 512 \
@@ -505,8 +512,9 @@ Build the full embedding-cluster tokenizer:
 python tests/quickstart.py \
   --mode build \
   --method embedding-cluster \
-  --source-file data/training_old_english.txt \
-  --target-file data/tokenizer_embedding_cluster_v1.json \
+  --source-file data/corpora/training_old_english.txt \
+  --target-file data/tokenizers/tokenizer_embedding_cluster_v1.json \
+  --cache-file data/cache/tokenizer_embedding_cluster_v1.embeddings.npz \
   --cluster-method spherical-kmeans \
   --reduced-dim 10 \
   --embedding-batch-size 512
@@ -583,21 +591,21 @@ They can also go before the subcommand if you prefer argparse's global-option st
 Dataset/tokenizer defaults:
 
 ```text
---tokenizer-json data/tokenizer_embedding_cluster_v1.json
---training-text data/training_old_english.txt
+--tokenizer-json data/tokenizers/tokenizer_embedding_cluster_v1.json
+--training-text data/corpora/training_old_english.txt
 ```
 
 Relative-position tokenizer path that may still be useful for comparison:
 
 ```text
-data/tokenizer_v2.json
+data/tokenizers/tokenizer_v2.json
 ```
 
 Older small-data defaults that may still be useful for comparison:
 
 ```text
-data/tokenizer_v1.json
-data/training_input.txt
+data/tokenizers/tokenizer_v1.json
+data/corpora/training_input.txt
 ```
 
 Architecture defaults:
@@ -609,7 +617,7 @@ Architecture defaults:
 --embedding-dim 80
 --head-num 4
 --layer-num 6
---coordinate-token-embeddings off
+--ilm-input-embeddings off
 ```
 
 Training defaults:
@@ -624,7 +632,7 @@ It is usually more typical to tune `dropout`, `epoch_num`, and `lr` first. Those
 
 Change architecture parameters more carefully. If you change `vocab_size`,
 `block_size`, `embedding_dim`, `head_num`, `layer_num`, or architecture flags
-such as `--coordinate-token-embeddings`, existing checkpoint files may no longer
+such as `--ilm-input-embeddings`, existing checkpoint files may no longer
 load because the saved tensor shapes must match the model architecture.
 
 Each attention head has `embedding_dim // head_num` channels. `head_size` is
@@ -658,7 +666,7 @@ To train with the relative-position tokenizer:
 ```bash
 python sandbox/sandbox.py \
   create models/m2.v0.0.0.pth \
-  --tokenizer-json data/tokenizer_v2.json
+  --tokenizer-json data/tokenizers/tokenizer_v2.json
 ```
 
 ### `create`
@@ -742,7 +750,7 @@ The architecture settings must match the checkpoint. If you trained a model with
 Build a tokenizer, then train a model:
 
 ```bash
-python tests/quickstart.py --mode build --method relative-position --source-file data/training_old_english.txt --target-file data/tokenizer_v2.json
+python tests/quickstart.py --mode build --method relative-position --source-file data/corpora/training_old_english.txt --target-file data/tokenizers/tokenizer_v2.json
 python sandbox/sandbox.py create models/m2.v0.0.0.pth
 ```
 
@@ -763,54 +771,58 @@ python sandbox/sandbox.py load models/m2.v0.2.1.pth
 
 The commands below intentionally focus on experiment mode, training knobs, and sampling knobs. Architecture dimensions such as `embedding_dim`, `layer_num`, `block_size`, and `batch_size` are usually easier to keep in `sandbox/sandbox.py` so the checkpoint family has one clear source of truth.
 
-Create a coordinate-head model with ordinary coordinate CE. This is the clean baseline for testing whether coordinate-specific heads help:
+Create a coordinate-role output-head model with ordinary coordinate CE. This
+isolates the effect of choosing an output projection by the role of the target
+coordinate:
 
 ```bash
 python sandbox/sandbox.py create models/m5.v0.0.0.pth \
-  --coordinate-lm-heads \
+  --ilm-output-heads \
   --dropout 0.4 \
   --epoch-num 4000 \
   --lr 2e-4
 ```
 
-`--coordinate-lm-heads` is the exception here because it changes which architecture family is being trained. Use it consistently when creating, improving, or loading that checkpoint family.
+`--ilm-output-heads` changes the checkpoint architecture. Use it consistently
+when creating, improving, or loading that checkpoint family.
 
-Create a word-row transformer model. This keeps standard coordinate-time
-attention, uses coordinate-role LM heads, and trains on selected word-row
-prefix positions:
+Create a word-prefix-objective model. This keeps standard coordinate-time
+attention and excludes the incomplete left-boundary suffix from the training
+loss:
 
 ```bash
 python sandbox/sandbox.py create models/m11.v0.0.0.pth \
-  --word-row-transformer \
+  --ilm-objective \
   --dropout 0.5 \
   --epoch-num 4000 \
   --lr 0.001
 ```
 
-`--word-row-transformer` implies `--coordinate-lm-heads`. Use it consistently
-when creating, improving, or loading that checkpoint family.
+`--ilm-objective` is independent from the input-embedding and output-head
+options. It requires `block_size == syllable_num * word_block_size`, which the
+sandbox defaults already satisfy.
 
-Create a word-row transformer with coordinate-specific token embeddings. This
-uses separate input embedding rows for each coordinate role, so the embedding
-table has `syllable_num * vocab_size` rows instead of `vocab_size` rows:
+Create the full ILM-adapted model. It combines the word-prefix objective with
+separate input embeddings and output heads for each coordinate role:
 
 ```bash
 python sandbox/sandbox.py create models/m12.v0.0.0.pth \
-  --word-row-transformer \
-  --coordinate-token-embeddings \
+  --ilm-objective \
+  --ilm-input-embeddings \
+  --ilm-output-heads \
   --dropout 0.5 \
   --epoch-num 4000 \
   --lr 0.001
 ```
 
-Use `--coordinate-token-embeddings` consistently when creating, improving, or
-loading that checkpoint family.
+Use every enabled ILM architecture option consistently when creating,
+improving, or loading that checkpoint family.
 
 Continue a coordinate-head model:
 
 ```bash
 python sandbox/sandbox.py improve models/m5.v0.0.0.pth \
-  --coordinate-lm-heads \
+  --ilm-output-heads \
   --patch \
   --dropout 0.4 \
   --epoch-num 2000 \
@@ -821,7 +833,7 @@ Load a coordinate-head model with the current coordinate-aware decoding defaults
 
 ```bash
 python sandbox/sandbox.py load models/m4.v0.1.0.pth \
-  --coordinate-lm-heads \
+  --ilm-output-heads \
   --stream
 ```
 
@@ -829,17 +841,17 @@ Load a coordinate-head model with explicit coordinate-specific sampling:
 
 ```bash
 python sandbox/sandbox.py load models/m4.v0.1.0.pth \
-  --coordinate-lm-heads \
+  --ilm-output-heads \
   --top-k-by-coordinate 3,4,6 \
   --temperature-by-coordinate 1,0.95,0.8 \
   --stream
 ```
 
-Load a word-row transformer model:
+Load a word-prefix-objective model:
 
 ```bash
 python sandbox/sandbox.py load models/m11.v0.0.0.pth \
-  --word-row-transformer \
+  --ilm-objective \
   --stream
 ```
 
@@ -847,7 +859,7 @@ Load a model while forcing scalar sampling instead of coordinate-specific sampli
 
 ```bash
 python sandbox/sandbox.py load models/m4.v0.1.0.pth \
-  --coordinate-lm-heads \
+  --ilm-output-heads \
   --top-k-by-coordinate none \
   --temperature-by-coordinate none \
   --top-k 3 \
@@ -855,7 +867,7 @@ python sandbox/sandbox.py load models/m4.v0.1.0.pth \
   --stream
 ```
 
-Create a standard model without coordinate-specific LM heads:
+Create a standard model without ILM output heads:
 
 ```bash
 python sandbox/sandbox.py create models/m3.v0.0.0.pth \
@@ -891,13 +903,14 @@ backend:
 pip install -r comparisons/requirements.txt
 ```
 
-Compare a word-row transformer checkpoint with a reference model:
+Compare a checkpoint trained with the ILM word-prefix objective and output heads with a reference model:
 
 ```bash
 python comparisons/compare_generation.py \
   --backend both \
   --ilm-model-path models/m4.v0.0.1.pth \
-  --word-row-transformer \
+  --ilm-objective \
+  --ilm-output-heads \
   --hf-reference karpathy-gpt2 \
   --prompts-file comparisons/prompts/ilm_quality.txt \
   --temperature 1 \
@@ -912,7 +925,8 @@ Run ILM only:
 python comparisons/compare_generation.py \
   --backend ilm \
   --ilm-model-path models/m4.v0.0.1.pth \
-  --word-row-transformer \
+  --ilm-objective \
+  --ilm-output-heads \
   --prompt "The queen" \
   --prompt "We will go battle against our enemies"
 ```
@@ -1179,7 +1193,7 @@ Use `!plot` to inspect model tensors:
 ```
 
 The plot menu includes normal `state_dict` tensors. For 3D tensors, the first
-axis is shown as side-by-side heatmaps. This is useful for future word-row
+axis is shown as side-by-side heatmaps. This is useful for future word-prefix
 experiments that expose a bank of matrices in the checkpoint.
 
 ### Common UI Problems

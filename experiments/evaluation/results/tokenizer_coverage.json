@@ -1,0 +1,43 @@
+{
+  "tokenizer_json": "experiments/evaluation/tokenizers/semantic_d10.json",
+  "oov_policy": "error",
+  "oov_fallback_code": null,
+  "files": [
+    {
+      "path": "experiments/evaluation/splits/tinyshakespeare/train.txt",
+      "covered": true,
+      "examples": [],
+      "source_bytes": 892315,
+      "tokenized_source_bytes": 892314,
+      "token_count": 241433,
+      "oov_token_count": 0,
+      "oov_rate": 0.0,
+      "coordinate_count": 724299,
+      "fallback_code": null
+    },
+    {
+      "path": "experiments/evaluation/splits/tinyshakespeare/validation.txt",
+      "covered": true,
+      "examples": [],
+      "source_bytes": 109503,
+      "tokenized_source_bytes": 109503,
+      "token_count": 29642,
+      "oov_token_count": 0,
+      "oov_rate": 0.0,
+      "coordinate_count": 88926,
+      "fallback_code": null
+    },
+    {
+      "path": "experiments/evaluation/splits/tinyshakespeare/test.txt",
+      "covered": true,
+      "examples": [],
+      "source_bytes": 109478,
+      "tokenized_source_bytes": 109478,
+      "token_count": 30766,
+      "oov_token_count": 0,
+      "oov_rate": 0.0,
+      "coordinate_count": 92298,
+      "fallback_code": null
+    }
+  ]
+}

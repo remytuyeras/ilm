@@ -1,0 +1,16 @@
+{
+  "artifact": "data/tokenizers/tokenizer_embedding_cluster_d10.json",
+  "artifact_sha256": "91497297547c348b82d51875042ff7982003e3f74ad38c26c43ebb412360ef88",
+  "source_file": "data/corpora/training_old_english.txt",
+  "source_sha256": "86c4e6aa9db7c042ec79f339dcb96d42b0075e16b8fc2e86bf0ca57e2dc565ed",
+  "method": "embedding-cluster",
+  "coding": "residual-centroid",
+  "cluster_method": "spherical-kmeans",
+  "embedding_model": "text-embedding-3-small",
+  "reduced_dim": 10,
+  "depth": 3,
+  "base": 64,
+  "semantic_labels": "data/tokenizers/tokenizer_embedding_cluster_d10.semantic.json",
+  "embedding_cache": "data/cache/tokenizer_embedding_cluster_d10.embeddings.npz",
+  "embedding_cache_tracked": false
+}

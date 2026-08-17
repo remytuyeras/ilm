@@ -171,17 +171,54 @@ def load_or_create_embeddings(
         cached = np.load(cache_file, allow_pickle=False)
         cached_tokens = cached["tokens"].tolist()
         cached_model = str(cached["model"])
-        if cached_tokens != list(tokens):
-            raise ValueError(
-                "Embedding cache token order does not match the source file. "
-                "Use --refresh-cache or choose a different --cache-file."
-            )
         if cached_model != model:
             raise ValueError(
                 f"Embedding cache was built with {cached_model!r}, not {model!r}. "
                 "Use --refresh-cache or choose a different --cache-file."
             )
-        return cached["embeddings"].astype(np.float32)
+        if cached_tokens == list(tokens):
+            return cached["embeddings"].astype(np.float32)
+
+        # A lossless tokenizer can add fallback character types while retaining
+        # almost all lexical tokens from an earlier cache. Reuse those vectors
+        # and request only genuinely new embeddings before updating the cache.
+        cached_embeddings = cached["embeddings"].astype(np.float32)
+        cached_indices = {token: index for index, token in enumerate(cached_tokens)}
+        missing_indices = [
+            index for index, token in enumerate(tokens) if token not in cached_indices
+        ]
+        embeddings = np.empty(
+            (len(tokens), cached_embeddings.shape[1]), dtype=np.float32
+        )
+        for index, token in enumerate(tokens):
+            cached_index = cached_indices.get(token)
+            if cached_index is not None:
+                embeddings[index] = cached_embeddings[cached_index]
+
+        if missing_indices:
+            missing_tokens = [tokens[index] for index in missing_indices]
+            print(
+                f"Extending embedding cache with {len(missing_tokens)} new tokens "
+                f"({len(tokens) - len(missing_tokens)} reused)."
+            )
+            missing_embeddings = fetch_openai_embeddings(
+                tokens=missing_tokens,
+                model=model,
+                batch_size=batch_size,
+                strip_embedding_text=strip_embedding_text,
+            )
+            embeddings[missing_indices] = missing_embeddings
+        else:
+            print("Reordering embedding cache to match the current token sequence.")
+
+        cached.close()
+        np.savez(
+            cache_file,
+            tokens=np.asarray(tokens, dtype=str),
+            model=np.asarray(model),
+            embeddings=embeddings,
+        )
+        return embeddings
 
     embeddings = fetch_openai_embeddings(
         tokens=tokens,
@@ -962,6 +999,8 @@ def plot_pca_centroids_3d(
     random_state: int = 42,
     nearest_metric: str = "euclidean",
     centroid_labels: Optional[Sequence[str]] = None,
+    output_path: Optional[str] = None,
+    show: bool = True,
 ) -> None:
     """
     Plot PCA dimensions 1-3 with centroids and nearest-token labels.
@@ -1043,7 +1082,109 @@ def plot_pca_centroids_3d(
     ax.set_zlabel("PC3")
     ax.legend(loc="upper right")
     plt.tight_layout()
-    plt.show()
+    if output_path is not None:
+        os.makedirs(os.path.dirname(output_path) or ".", exist_ok=True)
+        fig.savefig(output_path, bbox_inches="tight")
+        print(f"PCA 3D plot saved to {output_path}")
+    if show:
+        plt.show()
+    plt.close(fig)
+
+
+def plot_pca_centroids_2d(
+    tokens: Sequence[str],
+    reduced_vectors: np.ndarray,
+    centers: np.ndarray,
+    labels: np.ndarray,
+    title: str = "PCA 2D Projection With Centroids",
+    centroid_label: str = "Centroids",
+    colorbar_label: str = "Cluster id",
+    color_clusters: bool = False,
+    label_centroids: bool = True,
+    sample_size: Optional[int] = 20000,
+    random_state: int = 42,
+    nearest_metric: str = "euclidean",
+    centroid_labels: Optional[Sequence[str]] = None,
+    output_path: Optional[str] = None,
+    show: bool = True,
+) -> None:
+    """Plot the first two PCA dimensions with final-code centroids."""
+    if reduced_vectors.shape[1] < 2:
+        raise ValueError("PCA centroid plot requires at least 2 reduced dimensions.")
+
+    import matplotlib.pyplot as plt
+
+    sample_indices = _sample_plot_indices(len(reduced_vectors), sample_size, random_state)
+    sample_vectors = reduced_vectors[sample_indices, :2]
+    sample_labels = labels[sample_indices]
+    fig, axis = plt.subplots(figsize=(11, 8))
+
+    if color_clusters:
+        points = axis.scatter(
+            sample_vectors[:, 0],
+            sample_vectors[:, 1],
+            c=sample_labels,
+            cmap="tab20",
+            s=5,
+            alpha=0.35,
+            linewidths=0,
+        )
+        fig.colorbar(points, ax=axis, pad=0.02, label=colorbar_label)
+    else:
+        axis.scatter(
+            sample_vectors[:, 0],
+            sample_vectors[:, 1],
+            color="#8a8a8a",
+            s=5,
+            alpha=0.25,
+            linewidths=0,
+        )
+
+    center_vectors = centers[:, :2]
+    axis.scatter(
+        center_vectors[:, 0],
+        center_vectors[:, 1],
+        color="black",
+        marker="x",
+        s=80,
+        linewidths=2,
+        label=centroid_label,
+    )
+    if label_centroids:
+        if centroid_labels is None:
+            centroid_labels = _centroid_token_labels(
+                tokens=tokens,
+                vectors=reduced_vectors,
+                centers=centers,
+                labels=labels,
+                metric=nearest_metric,
+            )
+        for center_idx, centroid_label_text in enumerate(centroid_labels):
+            label = f"{center_idx}: {_format_token_preview(centroid_label_text, max_width=18)}"
+            axis.annotate(
+                label,
+                (center_vectors[center_idx, 0], center_vectors[center_idx, 1]),
+                fontsize=7,
+            )
+
+    plotted_count = len(sample_indices)
+    total_count = len(reduced_vectors)
+    title_suffix = f"{plotted_count}/{total_count} tokens"
+    if plotted_count == total_count:
+        title_suffix = f"{total_count} tokens"
+    axis.set_title(f"{title} ({title_suffix})")
+    axis.set_xlabel("PC1")
+    axis.set_ylabel("PC2")
+    axis.legend(loc="best")
+    axis.grid(alpha=0.2)
+    fig.tight_layout()
+    if output_path is not None:
+        os.makedirs(os.path.dirname(output_path) or ".", exist_ok=True)
+        fig.savefig(output_path, bbox_inches="tight")
+        print(f"PCA 2D plot saved to {output_path}")
+    if show:
+        plt.show()
+    plt.close(fig)
 
 
 def plot_residual_levels_3d(
@@ -1053,6 +1194,8 @@ def plot_residual_levels_3d(
     label_centroids: bool = True,
     sample_size: Optional[int] = 20000,
     random_state: int = 42,
+    output_dir: Optional[str] = None,
+    show: bool = True,
 ) -> None:
     """
     Plot one 3D figure for each residual clustering level.
@@ -1073,6 +1216,46 @@ def plot_residual_levels_3d(
             random_state=random_state,
             nearest_metric=str(level.get("nearest_metric", "euclidean")),
             centroid_labels=level.get("centroid_labels"),
+            output_path=(
+                os.path.join(output_dir, f"residual_level_{level_idx}_pca_3d.pdf")
+                if output_dir is not None else None
+            ),
+            show=show,
+        )
+
+
+def plot_residual_levels_2d(
+    tokens: Sequence[str],
+    levels: Sequence[Dict[str, Any]],
+    color_clusters: bool = False,
+    label_centroids: bool = True,
+    sample_size: Optional[int] = 20000,
+    random_state: int = 42,
+    output_dir: Optional[str] = None,
+    show: bool = True,
+) -> None:
+    """Plot one 2D PCA figure for each residual clustering level."""
+    for level in levels:
+        level_idx = int(level["level"])
+        plot_pca_centroids_2d(
+            tokens=tokens,
+            reduced_vectors=level["vectors"],
+            centers=level["centers"],
+            labels=level["labels"],
+            title=f"Residual Level {level_idx}: E_{level_idx}(w)",
+            centroid_label=f"Level {level_idx} centroids",
+            colorbar_label=f"Level {level_idx} cluster id",
+            color_clusters=color_clusters,
+            label_centroids=label_centroids,
+            sample_size=sample_size,
+            random_state=random_state,
+            nearest_metric=str(level.get("nearest_metric", "euclidean")),
+            centroid_labels=level.get("centroid_labels"),
+            output_path=(
+                os.path.join(output_dir, f"residual_level_{level_idx}_pca_2d.pdf")
+                if output_dir is not None else None
+            ),
+            show=show,
         )
 
 
@@ -1105,6 +1288,79 @@ def build_semantic_spelling_mapping(
     }
     ordered_tokens = token_order if token_order is not None else tokens
     return {token: token_to_spelling[token] for token in ordered_tokens}
+
+
+def reconstruct_frozen_mapping_diagnostics(
+    tokens: Sequence[str],
+    embeddings: np.ndarray,
+    direct_mapping: Dict[str, str],
+    reduced_dim: int,
+    normalize: bool,
+    depth: int,
+    cluster_method: ClusterMethod = "spherical-kmeans",
+    base: int = 64,
+    random_state: int = 42,
+) -> List[Dict[str, Any]]:
+    """Reconstruct residual diagnostics from a frozen final tokenizer mapping.
+
+    This intentionally does not fit K-Means or change any code. It derives a
+    centroid for each final coordinate value from the tokens assigned to that
+    value, then successively subtracts those derived centroids. Collision repair
+    may have changed a few final codes, so these diagnostics describe the
+    released mapping rather than an archived intermediate K-Means state.
+    """
+    if depth < 1:
+        raise ValueError("depth must be positive")
+    method = _normalize_cluster_method(cluster_method)
+    missing_tokens = [token for token in tokens if token not in direct_mapping]
+    if missing_tokens:
+        raise ValueError(
+            "embedding cache contains tokens absent from the frozen mapping, "
+            f"for example {missing_tokens[:3]!r}"
+        )
+
+    code_rows = []
+    for token in tokens:
+        parts = direct_mapping[token].split(":")
+        if len(parts) != depth:
+            raise ValueError(
+                f"token {token!r} has code {direct_mapping[token]!r}, expected depth {depth}"
+            )
+        try:
+            code = [int(part) for part in parts]
+        except ValueError as exc:
+            raise ValueError(f"token {token!r} has non-numeric code {direct_mapping[token]!r}") from exc
+        if any(value < 0 or value >= base for value in code):
+            raise ValueError(f"token {token!r} has code outside 0..{base - 1}")
+        code_rows.append(code)
+
+    codes = np.asarray(code_rows, dtype=np.int64)
+    residual_vectors = reduce_embeddings(
+        embeddings=embeddings,
+        reduced_dim=reduced_dim,
+        normalize=normalize,
+        random_state=random_state,
+    )
+    nearest_metric = "cosine" if method == "spherical-kmeans" else "euclidean"
+    levels = []
+    for level_idx in range(depth):
+        labels = codes[:, level_idx]
+        centers = _centers_from_labels(
+            vectors=residual_vectors,
+            labels=labels,
+            n_clusters=base,
+        )
+        levels.append(
+            {
+                "level": level_idx,
+                "vectors": residual_vectors.copy(),
+                "centers": centers,
+                "labels": labels.copy(),
+                "nearest_metric": nearest_metric,
+            }
+        )
+        residual_vectors = residual_vectors - centers[labels]
+    return levels
 
 
 def save_semantic_spelling_mapping(
@@ -1439,21 +1695,28 @@ def create_embedding_cluster_tokenizer(
     report_collisions: bool = False,
     collision_report_limit: Optional[int] = None,
     plot_pca_3d: bool = False,
+    plot_pca_2d: bool = False,
     plot_clusters: bool = False,
     plot_centroid_labels: bool = True,
     plot_sample_size: Optional[int] = 20000,
+    plot_output_dir: Optional[str] = None,
+    show_plots: bool = True,
     semantic_spelling_file: Optional[str] = None,
     centroid_label_method: CentroidLabelMethod = "closest-token",
     centroid_label_model: str = DEFAULT_CENTROID_LABEL_MODEL,
     centroid_label_concurrency: int = 8,
     centroid_label_examples: int = 20,
     centroid_label_max_output_tokens: int = DEFAULT_CENTROID_LABEL_MAX_OUTPUT_TOKENS,
+    lossless_tokenization: bool = False,
 ) -> Tuple[Callable[[str], List[Optional[str]]], Callable[[List[str]], List[Optional[str]]]]:
     """
     Create an embedding-space hierarchical tokenizer from a source file.
     """
     cluster_method = _normalize_cluster_method(cluster_method)
-    tokens = collect_unique_tokens(source_file)
+    tokens = collect_unique_tokens(
+        source_file,
+        lossless_tokenization=lossless_tokenization,
+    )
     if max_tokens is not None:
         tokens = tokens[:max_tokens]
 
@@ -1475,7 +1738,9 @@ def create_embedding_cluster_tokenizer(
         random_state=random_state,
     )
 
-    diagnostics: Optional[Dict[str, Any]] = {} if plot_pca_3d or semantic_spelling_file is not None else None
+    diagnostics: Optional[Dict[str, Any]] = {} if (
+        plot_pca_3d or plot_pca_2d or semantic_spelling_file is not None
+    ) else None
     token_mapping = build_mapping_from_vectors(
         tokens=tokens,
         reduced_vectors=reduced_vectors,
@@ -1486,7 +1751,7 @@ def create_embedding_cluster_tokenizer(
         collision_report_limit=collision_report_limit,
         diagnostics=diagnostics,
     )
-    if plot_pca_3d:
+    if plot_pca_3d or plot_pca_2d:
         if diagnostics is None or "levels" not in diagnostics:
             raise RuntimeError("Missing residual level diagnostics for PCA plot.")
     if diagnostics is not None and "levels" in diagnostics:
@@ -1518,6 +1783,19 @@ def create_embedding_cluster_tokenizer(
             label_centroids=plot_centroid_labels,
             sample_size=plot_sample_size,
             random_state=random_state,
+            output_dir=plot_output_dir,
+            show=show_plots,
+        )
+    if plot_pca_2d:
+        plot_residual_levels_2d(
+            tokens=tokens,
+            levels=diagnostics["levels"],
+            color_clusters=plot_clusters,
+            label_centroids=plot_centroid_labels,
+            sample_size=plot_sample_size,
+            random_state=random_state,
+            output_dir=plot_output_dir,
+            show=show_plots,
         )
 
     residual_metadata = token_mapping.get("metadata", {})
@@ -1534,13 +1812,18 @@ def create_embedding_cluster_tokenizer(
         "base": 64,
         "normalize": normalize,
         "strip_embedding_text": strip_embedding_text,
+        "tokenization_mode": "lossless" if lossless_tokenization else "legacy",
+        "random_state": random_state,
         "token_count": len(tokens),
         "collision_report_enabled": report_collisions,
         "collision_report_limit": collision_report_limit,
         "plot_pca_3d": plot_pca_3d,
+        "plot_pca_2d": plot_pca_2d,
         "plot_clusters": plot_clusters,
         "plot_centroid_labels": plot_centroid_labels,
         "plot_sample_size": plot_sample_size,
+        "plot_output_dir": plot_output_dir,
+        "show_plots": show_plots,
         "semantic_spelling_file": (
             force_json_extension(semantic_spelling_file)
             if semantic_spelling_file is not None
@@ -1556,4 +1839,10 @@ def create_embedding_cluster_tokenizer(
     if target_file is not None:
         save_dictionary(token_mapping, force_json_extension(target_file))
 
-    return generate_tokenizer(token_mapping["direct"]), generate_detokenizer(token_mapping["reverse"])
+    return (
+        generate_tokenizer(
+            token_mapping["direct"],
+            lossless_tokenization=lossless_tokenization,
+        ),
+        generate_detokenizer(token_mapping["reverse"]),
+    )

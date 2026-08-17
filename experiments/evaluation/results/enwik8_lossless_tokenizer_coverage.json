@@ -1,0 +1,47 @@
+{
+  "tokenizer_json": "experiments/evaluation/tokenizers/enwik8_lossless_semantic_d10_s4.json",
+  "oov_policy": "error",
+  "oov_fallback_code": null,
+  "require_lossless_encoding": true,
+  "files": [
+    {
+      "path": "experiments/evaluation/splits/enwik8/train.txt",
+      "covered": true,
+      "lossless_source_coverage": true,
+      "examples": [],
+      "source_bytes": 90000000,
+      "tokenized_source_bytes": 90000000,
+      "token_count": 24941336,
+      "oov_token_count": 0,
+      "oov_rate": 0.0,
+      "coordinate_count": 99765344,
+      "fallback_code": null
+    },
+    {
+      "path": "experiments/evaluation/splits/enwik8/validation.txt",
+      "covered": true,
+      "lossless_source_coverage": true,
+      "examples": [],
+      "source_bytes": 5000000,
+      "tokenized_source_bytes": 5000000,
+      "token_count": 1384577,
+      "oov_token_count": 0,
+      "oov_rate": 0.0,
+      "coordinate_count": 5538308,
+      "fallback_code": null
+    },
+    {
+      "path": "experiments/evaluation/splits/enwik8/test.txt",
+      "covered": true,
+      "lossless_source_coverage": true,
+      "examples": [],
+      "source_bytes": 5000000,
+      "tokenized_source_bytes": 5000000,
+      "token_count": 1401413,
+      "oov_token_count": 0,
+      "oov_rate": 0.0,
+      "coordinate_count": 5605652,
+      "fallback_code": null
+    }
+  ]
+}

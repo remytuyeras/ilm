@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "model_path": "models/evaluation/enwik8_lossless_s4_c_flat_15m_seed13.pth",
+  "tokenizer_json": "experiments/evaluation/tokenizers/enwik8_lossless_semantic_d10_s4.json",
+  "tokenizer_json_sha256": "92948069cb03978f45e5edf42334546f53d0b0fcc116de80ef67865267d80fcf",
+  "test_text": "experiments/evaluation/splits/enwik8/test.txt",
+  "test_text_sha256": "86f62c0adeb6c27763f308b8913bec743626421a4d2b4010f1e177a40eef7750",
+  "seed": 13,
+  "device": "mps",
+  "oov_policy": "error",
+  "oov_fallback_code": null,
+  "require_lossless_encoding": true,
+  "evaluation_mode": "block-reset",
+  "event_unit": "coordinate",
+  "encoding": {
+    "source_bytes": 5000000,
+    "tokenized_source_bytes": 5000000,
+    "token_count": 1401413,
+    "oov_token_count": 0,
+    "oov_rate": 0.0,
+    "coordinate_count": 5605652,
+    "fallback_code": null
+  },
+  "architecture": {
+    "vocab_size": 64,
+    "atomic_lexical": false,
+    "syllable_num": 4,
+    "word_block_size": 20,
+    "block_size": 80,
+    "embedding_dim": 462,
+    "head_num": 6,
+    "layer_num": 6,
+    "ilm_input_embeddings": false,
+    "ilm_output_heads": false,
+    "ilm_objective": false
+  },
+  "teacher_forced": {
+    "coordinate_nll_nats": 7973986.56640625,
+    "coordinate_events": 5605600,
+    "evaluation_mode": "block-reset",
+    "scored_source_bytes": 4999940.25,
+    "bits_per_utf8_byte": 2.3008336700562593,
+    "coordinate_nll_nats_per_event": 1.422503668903641
+  }
+}

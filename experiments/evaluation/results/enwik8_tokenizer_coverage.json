@@ -1,0 +1,43 @@
+{
+  "tokenizer_json": "experiments/evaluation/tokenizers/enwik8_semantic_d10_s4.json",
+  "oov_policy": "error",
+  "oov_fallback_code": null,
+  "files": [
+    {
+      "path": "experiments/evaluation/splits/enwik8/train.txt",
+      "covered": true,
+      "examples": [],
+      "source_bytes": 90000000,
+      "tokenized_source_bytes": 87403471,
+      "token_count": 23301869,
+      "oov_token_count": 0,
+      "oov_rate": 0.0,
+      "coordinate_count": 93207476,
+      "fallback_code": null
+    },
+    {
+      "path": "experiments/evaluation/splits/enwik8/validation.txt",
+      "covered": true,
+      "examples": [],
+      "source_bytes": 5000000,
+      "tokenized_source_bytes": 4855061,
+      "token_count": 1291922,
+      "oov_token_count": 0,
+      "oov_rate": 0.0,
+      "coordinate_count": 5167688,
+      "fallback_code": null
+    },
+    {
+      "path": "experiments/evaluation/splits/enwik8/test.txt",
+      "covered": true,
+      "examples": [],
+      "source_bytes": 5000000,
+      "tokenized_source_bytes": 4859356,
+      "token_count": 1307158,
+      "oov_token_count": 0,
+      "oov_rate": 0.0,
+      "coordinate_count": 5228632,
+      "fallback_code": null
+    }
+  ]
+}

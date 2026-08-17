@@ -1,0 +1,40 @@
+{
+  "source_file": "data/corpora/training_old_english.txt",
+  "source_bytes": 1115394,
+  "source_sha256": "86c4e6aa9db7c042ec79f339dcb96d42b0075e16b8fc2e86bf0ca57e2dc565ed",
+  "fractions": {
+    "train": 0.8,
+    "validation": 0.1,
+    "test": 0.1
+  },
+  "context_gap_bytes": 2048,
+  "splits": {
+    "train": {
+      "path": "experiments/evaluation/splits/tinyshakespeare/train.txt",
+      "byte_range": [
+        0,
+        892315
+      ],
+      "bytes": 892315,
+      "sha256": "8564bb90b6305620187b212d62ee40694e1b3639401878b3fdc4ec395016ec4a"
+    },
+    "validation": {
+      "path": "experiments/evaluation/splits/tinyshakespeare/validation.txt",
+      "byte_range": [
+        894353,
+        1003856
+      ],
+      "bytes": 109503,
+      "sha256": "db23c7d1d888b8ff6e5611c77351148f3855ba554f94e44d02e2b60f2276a8a1"
+    },
+    "test": {
+      "path": "experiments/evaluation/splits/tinyshakespeare/test.txt",
+      "byte_range": [
+        1005916,
+        1115394
+      ],
+      "bytes": 109478,
+      "sha256": "aac0501eb329bdd1791dd577b769abad395e2c569c65d7b3180a2fd9d69c9d29"
+    }
+  }
+}

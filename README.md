@@ -143,10 +143,15 @@ This repository provides tools to:
 - **`ilm/utils/`**: interactive chat interface and checkpoint versioning helpers.
 - **`sandbox/`**: experiment scripts that wire a tokenizer, a training text, and a model together.
 - **`tests/`**: unit tests covering the toolkit.
-- **`data/`**, **`models/`**: training inputs and tokenizer mappings, and saved checkpoints.
-- **`docs/`**, **`img/`**: background notes and documentation images.
+- **`data/corpora/`**: source training text.
+- **`data/tokenizers/`**: portable tokenizer mappings and selected semantic-label sidecars.
+- **`data/cache/`**: local embedding caches. These are regenerable and intentionally not committed.
+- **`experiments/`**: fixed configurations, split manifests, prompts, and result records for reproducible studies.
+- **`models/`**: local checkpoints, with selected release checkpoints under `models/release/`.
+- **`docs/`**, **`img/`**: repository documentation and documentation images.
 
 For command-by-command instructions on the scripts, see [HOWTO.md](HOWTO.md).
+The repository-facing guides are collected in [docs/README.md](docs/README.md).
 
 ## Installation
 
@@ -177,8 +182,8 @@ from ilm.tokenizer import create_tokenizer
 
 # Create the original relative-position tokenizer and save the mapping to a JSON file
 tokenizer, detokenizer = create_tokenizer(
-    source_file="data/training_input.txt",
-    target_file="data/tokenizer_v1.json",
+    source_file="data/corpora/training_input.txt",
+    target_file="data/tokenizers/tokenizer_v1.json",
     method="relative-position",
 )
 ```
@@ -189,13 +194,14 @@ The embedding-cluster method calls the OpenAI embedding API, so it needs an `OPE
 from ilm.tokenizer import create_tokenizer
 
 tokenizer, detokenizer = create_tokenizer(
-    source_file="data/training_input.txt",
-    target_file="data/tokenizer_embedding_cluster_v1.json",
+    source_file="data/corpora/training_input.txt",
+    target_file="data/tokenizers/tokenizer_embedding_cluster_v1.json",
     method="embedding-cluster",
     cluster_method="spherical-kmeans",
     reduced_dim=10,
     embedding_batch_size=512,
-    semantic_spelling_file="data/tokenizer_embedding_cluster_v1.semantic.json",
+    cache_file="data/cache/tokenizer_embedding_cluster_v1.embeddings.npz",
+    semantic_spelling_file="data/tokenizers/tokenizer_embedding_cluster_v1.semantic.json",
 )
 ```
 
@@ -211,7 +217,7 @@ To load a previously saved tokenizer mapping:
 from ilm.tokenizer import load_tokenizer
 
 # Load the tokenizer mapping from the JSON file
-tokenizer, detokenizer = load_tokenizer("data/tokenizer_v1.json")
+tokenizer, detokenizer = load_tokenizer("data/tokenizers/tokenizer_v1.json")
 ```
 
 ### Optional: creating a default training dataset
@@ -222,7 +228,7 @@ If you do not have a dataset of your own, the bundled script generates a default
 python ilm/tokenizer/create_training.py
 ```
 
-It reads the `garage-bAInd/Open-Platypus` [dataset](https://huggingface.co/datasets/garage-bAInd/Open-Platypus) and writes `training_input.txt` into the `data/` directory.
+It reads the `garage-bAInd/Open-Platypus` [dataset](https://huggingface.co/datasets/garage-bAInd/Open-Platypus) and writes `training_input.txt` into `data/corpora/`.
 
 ### Sample usage with language models
 
@@ -236,15 +242,15 @@ from ilm.tokenizer import create_tokenizer, load_tokenizer
 mode = "load"
 if mode == "build":
     tokenizer, detokenizer = create_tokenizer(
-        source_file="data/training_input.txt",
-        target_file="data/tokenizer_v1.json",
+        source_file="data/corpora/training_input.txt",
+        target_file="data/tokenizers/tokenizer_v1.json",
         method="relative-position",
     )
 elif mode == "load":
-    tokenizer, detokenizer = load_tokenizer("data/tokenizer_v1.json")
+    tokenizer, detokenizer = load_tokenizer("data/tokenizers/tokenizer_v1.json")
 
 line_index = 20
-with open("data/training_input.txt", "r", encoding="utf-8") as file:
+with open("data/corpora/training_input.txt", "r", encoding="utf-8") as file:
     for index, line in enumerate(file):
         if index == line_index:
             sample_line = line

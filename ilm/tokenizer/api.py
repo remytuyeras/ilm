@@ -53,15 +53,19 @@ def create_tokenizer(
     report_collisions: bool = False,
     collision_report_limit: Optional[int] = None,
     plot_pca_3d: bool = False,
+    plot_pca_2d: bool = False,
     plot_clusters: bool = False,
     plot_centroid_labels: bool = True,
     plot_sample_size: Optional[int] = 20000,
+    plot_output_dir: Optional[str] = None,
+    show_plots: bool = True,
     semantic_spelling_file: Optional[str] = None,
     centroid_label_method: str = "closest-token",
     centroid_label_model: str = DEFAULT_CENTROID_LABEL_MODEL,
     centroid_label_concurrency: int = 8,
     centroid_label_examples: int = 20,
     centroid_label_max_output_tokens: int = 4096,
+    lossless_tokenization: bool = False,
 ) -> Tuple[Callable[[str], List[Optional[str]]], Callable[[List[str]], List[Optional[str]]]]:
     """
     Create a tokenizer using one of ILM's tokenizer-building methods.
@@ -77,6 +81,8 @@ def create_tokenizer(
     if method == "relative-position":
         if semantic_spelling_file is not None:
             raise ValueError("semantic_spelling_file is only available with method='embedding-cluster'.")
+        if lossless_tokenization:
+            raise ValueError("lossless_tokenization is only available with method='embedding-cluster'.")
         return create_relative_position_tokenizer(
             source_file=source_file,
             target_file=target_file,
@@ -104,13 +110,17 @@ def create_tokenizer(
         report_collisions=report_collisions,
         collision_report_limit=collision_report_limit,
         plot_pca_3d=plot_pca_3d,
+        plot_pca_2d=plot_pca_2d,
         plot_clusters=plot_clusters,
         plot_centroid_labels=plot_centroid_labels,
         plot_sample_size=plot_sample_size,
+        plot_output_dir=plot_output_dir,
+        show_plots=show_plots,
         semantic_spelling_file=semantic_spelling_file,
         centroid_label_method=centroid_label_method,
         centroid_label_model=centroid_label_model,
         centroid_label_concurrency=centroid_label_concurrency,
         centroid_label_examples=centroid_label_examples,
         centroid_label_max_output_tokens=centroid_label_max_output_tokens,
+        lossless_tokenization=lossless_tokenization,
     )

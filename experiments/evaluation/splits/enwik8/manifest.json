@@ -1,0 +1,35 @@
+{
+  "source_file": "data/corpora/enwik8",
+  "source_bytes": 100000000,
+  "source_sha256": "2b49720ec4d78c3c9fabaee6e4179a5e997302b3a70029f30f2d582218c024a8",
+  "protocol": "canonical contiguous 90M/5M/5M enwik8 byte split",
+  "splits": {
+    "train": {
+      "path": "experiments/evaluation/splits/enwik8/train.txt",
+      "byte_range": [
+        0,
+        90000000
+      ],
+      "bytes": 90000000,
+      "sha256": "f8978bd9ca51fbea387d5145d310652ab39904bcbc8ab2647932c8c2e0539e64"
+    },
+    "validation": {
+      "path": "experiments/evaluation/splits/enwik8/validation.txt",
+      "byte_range": [
+        90000000,
+        95000000
+      ],
+      "bytes": 5000000,
+      "sha256": "16b8b889f05ebeb5684d497d49383e8e55eb3634cee2f9a023dcab68cbf64f17"
+    },
+    "test": {
+      "path": "experiments/evaluation/splits/enwik8/test.txt",
+      "byte_range": [
+        95000000,
+        100000000
+      ],
+      "bytes": 5000000,
+      "sha256": "86f62c0adeb6c27763f308b8913bec743626421a4d2b4010f1e177a40eef7750"
+    }
+  }
+}

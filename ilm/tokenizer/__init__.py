@@ -12,6 +12,7 @@ from .core import (
     force_json_extension,
     generate_detokenizer,
     generate_tokenizer,
+    load_atomic_lexical_tokenizer,
     load_dictionary,
     save_dictionary,
 )

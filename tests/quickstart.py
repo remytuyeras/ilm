@@ -5,19 +5,19 @@ Default load test:
     python tests/quickstart.py
 
 Load a specific tokenizer:
-    python tests/quickstart.py --target-file data/tokenizer_v2.json
+    python tests/quickstart.py --target-file data/tokenizers/tokenizer_v2.json
 
 Build the original relative-position tokenizer:
     python tests/quickstart.py --mode build \
         --method relative-position \
-        --source-file data/training_old_english.txt \
-        --target-file data/tokenizer_v2.json
+        --source-file data/corpora/training_old_english.txt \
+        --target-file data/tokenizers/tokenizer_v2.json
 
 Build the embedding-cluster tokenizer:
     python tests/quickstart.py --mode build \
         --method embedding-cluster \
-        --source-file data/training_old_english.txt \
-        --target-file data/tokenizer_embedding_cluster_v1.json \
+        --source-file data/corpora/training_old_english.txt \
+        --target-file data/tokenizers/tokenizer_embedding_cluster_v1.json \
         --cluster-method spherical-kmeans \
         --reduced-dim 10 \
         --embedding-batch-size 512
@@ -39,6 +39,7 @@ Useful experiments:
     --semantic-spelling-file
     --centroid-label-method llm
     --centroid-label-model gpt-5.6-terra
+    --plot-pca-2d
     --plot-pca-3d
     --plot-clusters
 """
@@ -59,8 +60,8 @@ from ilm.tokenizer import (
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Try ILM tokenizer SDK methods.")
     parser.add_argument("--mode", choices=["load", "build"], default="load")
-    parser.add_argument("--source-file", default="data/training_old_english.txt")
-    parser.add_argument("--target-file", default="data/tokenizer_v2.json")
+    parser.add_argument("--source-file", default="data/corpora/training_old_english.txt")
+    parser.add_argument("--target-file", default="data/tokenizers/tokenizer_v2.json")
     parser.add_argument("--method", choices=TOKENIZER_METHODS, default="relative-position")
     parser.add_argument("--line-index", type=int, default=20)
 
@@ -77,6 +78,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--cache-file", default=None)
     parser.add_argument("--refresh-cache", action="store_true")
     parser.add_argument("--keep-token-spacing", action="store_true")
+    parser.add_argument(
+        "--lossless-tokenization",
+        action="store_true",
+        help="Represent every unmatched source character as a tokenizer token.",
+    )
     parser.add_argument("--max-tokens", type=int, default=None)
     parser.add_argument("--random-state", type=int, default=42)
     parser.add_argument("--no-collision-report", action="store_true")
@@ -101,9 +107,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--centroid-label-examples", type=int, default=20)
     parser.add_argument("--centroid-label-max-output-tokens", type=int, default=4096)
     parser.add_argument("--plot-pca-3d", action="store_true")
+    parser.add_argument("--plot-pca-2d", action="store_true")
     parser.add_argument("--plot-clusters", action="store_true")
     parser.add_argument("--no-plot-centroid-labels", action="store_true")
     parser.add_argument("--plot-sample-size", type=int, default=20000)
+    parser.add_argument("--plot-output-dir", default=None)
+    parser.add_argument("--no-show-plots", action="store_true")
     return parser
 
 
@@ -133,15 +142,19 @@ def main() -> None:
             report_collisions=not args.no_collision_report,
             collision_report_limit=args.collision_report_limit,
             plot_pca_3d=args.plot_pca_3d,
+            plot_pca_2d=args.plot_pca_2d,
             plot_clusters=args.plot_clusters,
             plot_centroid_labels=not args.no_plot_centroid_labels,
             plot_sample_size=args.plot_sample_size,
+            plot_output_dir=args.plot_output_dir,
+            show_plots=not args.no_show_plots,
             semantic_spelling_file=semantic_spelling_file,
             centroid_label_method=args.centroid_label_method,
             centroid_label_model=args.centroid_label_model,
             centroid_label_concurrency=args.centroid_label_concurrency,
             centroid_label_examples=args.centroid_label_examples,
             centroid_label_max_output_tokens=args.centroid_label_max_output_tokens,
+            lossless_tokenization=args.lossless_tokenization,
         )
     else:
         tokenizer, detokenizer = load_tokenizer(args.target_file)

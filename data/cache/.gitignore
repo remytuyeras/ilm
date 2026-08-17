@@ -1,0 +1,4 @@
+# Embedding caches are local, regenerable artifacts. Keep this placeholder so
+# the cache location exists in fresh clones without committing cached vectors.
+*
+!.gitignore

@@ -1,0 +1,10 @@
+{
+  "source_file": "data/corpora/enwik8",
+  "base": 64,
+  "depth": 4,
+  "lossless_tokenization": true,
+  "capacity": 16777216,
+  "unique_tokens": 519955,
+  "remaining_codes": 16257261,
+  "fits": true
+}

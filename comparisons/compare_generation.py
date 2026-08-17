@@ -7,10 +7,11 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import sys
 import time
 from datetime import datetime, timezone
-from typing import Callable, Dict, Iterable, List, Optional, Sequence
+from typing import Callable, Dict, Iterable, List, Optional, Sequence, Tuple
 
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(1, ROOT_DIR)
@@ -21,7 +22,7 @@ from tqdm import tqdm
 import ilm
 
 
-DEFAULT_TOKENIZER_JSON = "data/tokenizer_embedding_cluster_v1.json"
+DEFAULT_TOKENIZER_JSON = "data/tokenizers/tokenizer_embedding_cluster_v1.json"
 DEFAULT_SYLLABLE_NUM = 3
 DEFAULT_WORD_BLOCK_SIZE = 20
 DEFAULT_VOCAB_SIZE = 64
@@ -41,6 +42,10 @@ DEFAULT_HF_MAX_NEW_TOKENS = 300
 DEFAULT_HF_CACHE_DIR = "comparisons/hf_cache"
 DEFAULT_HF_REFERENCE = "karpathy-gpt2"
 DEFAULT_PROGRESS = True
+DEFAULT_SAMPLES_PER_PROMPT = 1
+DEFAULT_GENERATION_SEED = None
+DEFAULT_OOV_POLICY = "error"
+DEFAULT_OOV_FALLBACK_CODE = None
 HF_REFERENCE_MODELS = {
     "karpathy-gpt2": {
         "model": "gpt2",
@@ -64,6 +69,37 @@ HF_REFERENCE_MODELS = {
         "description": "GPT-2 small Shakespeare fine-tune with roughly 0.1B parameters.",
     },
 }
+
+ANSI_ESCAPE = re.compile(r"\x1b\[[0-?]*[ -/]*[@-~]")
+
+
+def strip_ansi(text: str) -> str:
+    return ANSI_ESCAPE.sub("", text)
+
+
+def completion_metrics(completion: str) -> Dict[str, float]:
+    words = re.findall(r"[A-Za-z]+(?:'[A-Za-z]+)?", completion.lower())
+
+    def repeated_ngram_stats(n: int) -> Tuple[int, float]:
+        ngrams = [tuple(words[index:index + n]) for index in range(len(words) - n + 1)]
+        if not ngrams:
+            return 0, 0.0
+        counts: Dict[Tuple[str, ...], int] = {}
+        for ngram in ngrams:
+            counts[ngram] = counts.get(ngram, 0) + 1
+        repeated = sum(count for count in counts.values() if count > 1)
+        return max(counts.values()), repeated / len(ngrams)
+
+    max_bigram, repeated_bigram_fraction = repeated_ngram_stats(2)
+    max_trigram, repeated_trigram_fraction = repeated_ngram_stats(3)
+    return {
+        "word_count": len(words),
+        "invalid_code_count": completion.count("<none:"),
+        "max_repeated_bigram": max_bigram,
+        "max_repeated_trigram": max_trigram,
+        "repeated_bigram_fraction": repeated_bigram_fraction,
+        "repeated_trigram_fraction": repeated_trigram_fraction,
+    }
 
 
 def parse_int_sequence(value: str) -> Optional[Sequence[int]]:
@@ -151,10 +187,14 @@ def ilm_config(args: argparse.Namespace) -> Dict[str, object]:
         "head_size": args.embedding_dim // args.head_num,
         "layer_num": args.layer_num,
         "dropout": args.dropout,
-        "coordinate_token_embeddings": args.coordinate_token_embeddings,
-        "coordinate_lm_heads": args.coordinate_lm_heads,
-        "word_row_transformer": args.word_row_transformer,
+        "ilm_input_embeddings": args.ilm_input_embeddings,
+        "ilm_output_heads": args.ilm_output_heads,
+        "ilm_objective": args.ilm_objective,
+        "oov_policy": args.oov_policy,
+        "oov_fallback_code": args.oov_fallback_code,
         "completed_words": args.completed_words,
+        "samples_per_prompt": args.samples_per_prompt,
+        "generation_seed": args.generation_seed,
         "temperature": args.temperature,
         "top_k": args.top_k,
         "top_k_by_coordinate": format_sequence(args.top_k_by_coordinate),
@@ -172,6 +212,8 @@ def hf_config(args: argparse.Namespace) -> Dict[str, object]:
         "hf_max_new_tokens": args.hf_max_new_tokens,
         "hf_temperature": args.hf_temperature,
         "hf_top_k": args.hf_top_k,
+        "samples_per_prompt": args.samples_per_prompt,
+        "generation_seed": args.generation_seed,
         "trust_remote_code": args.trust_remote_code,
     }
 
@@ -188,14 +230,19 @@ def build_ilm_generator(args: argparse.Namespace, device: torch.device) -> Calla
         syllable_num=args.syllable_num,
         word_block_size=args.word_block_size,
         head_num=args.head_num,
-        coordinate_token_embeddings=args.coordinate_token_embeddings,
-        coordinate_lm_heads=args.coordinate_lm_heads or args.word_row_transformer,
-        word_row_transformer=args.word_row_transformer,
+        ilm_input_embeddings=args.ilm_input_embeddings,
+        ilm_output_heads=args.ilm_output_heads,
+        ilm_objective=args.ilm_objective,
     )
     model.load_model(args.ilm_model_path)
 
     def generate(prompt: str) -> str:
-        single_context = ilm.format_context(prompt, tokenizer=tokenizer).unsqueeze(0)
+        single_context = ilm.format_context(
+            prompt,
+            tokenizer=tokenizer,
+            oov_policy=args.oov_policy,
+            fallback_code=args.oov_fallback_code,
+        ).unsqueeze(0)
         generated_tokens = model.generate(
             single_context,
             max_new_tokens=args.syllable_num * args.completed_words,
@@ -208,7 +255,7 @@ def build_ilm_generator(args: argparse.Namespace, device: torch.device) -> Calla
         ).detach().cpu()[0].tolist()
         token_codes = ilm.gather_tokens(generated_tokens, syllable_num=args.syllable_num)
         text = "".join(str(item) for item in detokenizer(token_codes))
-        return text.replace(prompt, "", 1)
+        return strip_ansi(text.replace(prompt, "", 1))
 
     return generate
 
@@ -265,7 +312,7 @@ def build_hf_generator(args: argparse.Namespace, device: torch.device) -> Callab
         text = tokenizer.decode(generated[0], skip_special_tokens=True)
         if text.startswith(prompt):
             return text[len(prompt):]
-        return text
+        return strip_ansi(text)
 
     return generate
 
@@ -276,18 +323,29 @@ def run_backend(
         prompts: Sequence[str],
         config: Dict[str, object],
         show_progress: bool = DEFAULT_PROGRESS,
+        samples_per_prompt: int = DEFAULT_SAMPLES_PER_PROMPT,
+        generation_seed: Optional[int] = DEFAULT_GENERATION_SEED,
         ) -> List[Dict[str, object]]:
     records = []
+    jobs = [
+        (prompt, sample_index)
+        for prompt in prompts
+        for sample_index in range(samples_per_prompt)
+    ]
     iterator = tqdm(
-        prompts,
+        jobs,
         desc=f"{name} generation",
         unit="prompt",
         disable=not show_progress,
     )
-    for prompt in iterator:
+    for job_index, (prompt, sample_index) in enumerate(iterator):
+        completion_seed = None
+        if generation_seed is not None:
+            completion_seed = generation_seed + job_index
+            ilm.set_seed(completion_seed)
         started = time.time()
         try:
-            completion = generator(prompt)
+            completion = strip_ansi(generator(prompt))
             error = None
         except Exception as exc:
             completion = ""
@@ -297,7 +355,10 @@ def run_backend(
             {
                 "backend": name,
                 "prompt": prompt,
+                "sample_index": sample_index,
+                "generation_seed": completion_seed,
                 "completion": completion,
+                "metrics": completion_metrics(completion),
                 "error": error,
                 "elapsed_seconds": elapsed,
                 "config": config,
@@ -311,18 +372,23 @@ def backend_load_error_records(
         error: Exception,
         prompts: Iterable[str],
         config: Dict[str, object],
+        samples_per_prompt: int = DEFAULT_SAMPLES_PER_PROMPT,
         ) -> List[Dict[str, object]]:
     message = f"{type(error).__name__}: {error}"
     return [
         {
             "backend": name,
             "prompt": prompt,
+            "sample_index": sample_index,
+            "generation_seed": None,
             "completion": "",
+            "metrics": completion_metrics(""),
             "error": message,
             "elapsed_seconds": 0.0,
             "config": config,
         }
         for prompt in prompts
+        for sample_index in range(samples_per_prompt)
     ]
 
 
@@ -345,6 +411,9 @@ def write_reports(records: List[Dict[str, object]], output_dir: str) -> Dict[str
             if record["error"]:
                 f.write(f"Error: `{record['error']}`\n\n")
                 continue
+            f.write("Metrics: " + ", ".join(
+                f"`{name}={value}`" for name, value in record["metrics"].items()
+            ) + "\n\n")
             f.write("```text\n")
             f.write(record["completion"])
             f.write("\n```\n\n")
@@ -371,6 +440,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--prompts-file", default=DEFAULT_PROMPTS_FILE)
     parser.add_argument("--output-dir", default=DEFAULT_OUTPUT_DIR)
     parser.add_argument("--device", default="auto")
+    parser.add_argument("--samples-per-prompt", type=int, default=DEFAULT_SAMPLES_PER_PROMPT)
+    parser.add_argument("--generation-seed", type=int, default=DEFAULT_GENERATION_SEED)
 
     parser.add_argument("--ilm-model-path")
     parser.add_argument("--tokenizer-json", default=DEFAULT_TOKENIZER_JSON)
@@ -383,9 +454,20 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--head-num", type=int, default=DEFAULT_HEAD_NUM)
     parser.add_argument("--layer-num", type=int, default=DEFAULT_LAYER_NUM)
     parser.add_argument("--dropout", type=float, default=DEFAULT_DROPOUT)
-    parser.add_argument("--coordinate-token-embeddings", action="store_true")
-    parser.add_argument("--coordinate-lm-heads", action="store_true")
-    parser.add_argument("--word-row-transformer", action="store_true")
+    parser.add_argument("--ilm-input-embeddings", action="store_true")
+    parser.add_argument("--ilm-output-heads", action="store_true")
+    parser.add_argument("--ilm-objective", action="store_true")
+    parser.add_argument(
+        "--oov-policy",
+        choices=["error", "fallback"],
+        default=DEFAULT_OOV_POLICY,
+        help="Stop on OOV prompt words, or use a deterministic fallback for transfer probes.",
+    )
+    parser.add_argument(
+        "--oov-fallback-code",
+        default=DEFAULT_OOV_FALLBACK_CODE,
+        help="Explicit code for fallback OOV handling; defaults to the smallest tokenizer code.",
+    )
     parser.add_argument("--completed-words", type=int, default=DEFAULT_COMPLETED_WORDS)
     parser.add_argument("--temperature", type=float, default=DEFAULT_TEMPERATURE)
     parser.add_argument("--top-k", type=int, default=DEFAULT_TOP_K)
@@ -419,8 +501,17 @@ def validate_args(parser: argparse.ArgumentParser, args: argparse.Namespace) -> 
         parser.error("--head-num must be positive")
     if args.embedding_dim % args.head_num != 0:
         parser.error("--embedding-dim must be divisible by --head-num")
-    if args.word_row_transformer:
-        args.coordinate_lm_heads = True
+    if args.ilm_objective and args.word_block_size != args.block_size // args.syllable_num:
+        parser.error(
+            "--ilm-objective requires --word-block-size to equal "
+            "--block-size // --syllable-num"
+        )
+    if args.samples_per_prompt <= 0:
+        parser.error("--samples-per-prompt must be positive")
+    if args.generation_seed is not None and args.generation_seed < 0:
+        parser.error("--generation-seed must be non-negative")
+    if args.oov_fallback_code is not None and args.oov_policy != "fallback":
+        parser.error("--oov-fallback-code requires --oov-policy fallback")
     if args.backend in {"ilm", "both"} and not args.ilm_model_path:
         parser.error("--ilm-model-path is required when --backend is ilm or both")
     if args.backend in {"hf", "both"} and not (args.hf_model or args.hf_reference):
@@ -451,18 +542,46 @@ def main(argv: Optional[Sequence[str]] = None) -> None:
         try:
             print("Loading ILM backend...")
             ilm_generator = build_ilm_generator(args, device)
-            records.extend(run_backend("ilm", ilm_generator, prompts, config, args.progress))
+            records.extend(
+                run_backend(
+                    "ilm",
+                    ilm_generator,
+                    prompts,
+                    config,
+                    args.progress,
+                    args.samples_per_prompt,
+                    args.generation_seed,
+                )
+            )
         except Exception as exc:
-            records.extend(backend_load_error_records("ilm", exc, prompts, config))
+            records.extend(
+                backend_load_error_records(
+                    "ilm", exc, prompts, config, args.samples_per_prompt
+                )
+            )
 
     if args.backend in {"hf", "both"}:
         config = hf_config(args)
         try:
             print("Loading Hugging Face backend...")
             hf_generator = build_hf_generator(args, device)
-            records.extend(run_backend("huggingface", hf_generator, prompts, config, args.progress))
+            records.extend(
+                run_backend(
+                    "huggingface",
+                    hf_generator,
+                    prompts,
+                    config,
+                    args.progress,
+                    args.samples_per_prompt,
+                    args.generation_seed,
+                )
+            )
         except Exception as exc:
-            records.extend(backend_load_error_records("huggingface", exc, prompts, config))
+            records.extend(
+                backend_load_error_records(
+                    "huggingface", exc, prompts, config, args.samples_per_prompt
+                )
+            )
 
     print_terminal_report(records)
     paths = write_reports(records, args.output_dir)

@@ -32,13 +32,15 @@ pip install -r comparisons/requirements.txt
 
 ## Compare ILM Against A Reference
 
-Example using a word-row transformer checkpoint:
+Example using a checkpoint with coordinate-role output heads and the
+word-prefix objective:
 
 ```bash
 python comparisons/compare_generation.py \
   --backend both \
   --ilm-model-path models/m4.v0.0.1.pth \
-  --word-row-transformer \
+  --ilm-objective \
+  --ilm-output-heads \
   --hf-reference karpathy-gpt2 \
   --prompts-file comparisons/prompts/ilm_quality.txt \
   --temperature 1 \
@@ -85,16 +87,17 @@ repositories you trust.
 python comparisons/compare_generation.py \
   --backend ilm \
   --ilm-model-path models/m4.v0.0.1.pth \
-  --word-row-transformer \
+  --ilm-objective \
+  --ilm-output-heads \
   --prompt "The queen" \
   --prompt "We will go battle against our enemies"
 ```
 
-If the ILM checkpoint was trained with coordinate-specific input embeddings,
-load it with the matching architecture flag:
+If the ILM checkpoint was trained with coordinate-role input embeddings, load
+it with the matching architecture flag:
 
 ```bash
---coordinate-token-embeddings
+--ilm-input-embeddings
 ```
 
 ## Prompt Sets

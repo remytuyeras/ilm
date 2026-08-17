@@ -107,6 +107,9 @@ def user_interface(
         top_k_by_coordinate: Optional[Sequence[int]] = None,
         temperature_by_coordinate: Optional[Sequence[float]] = None,
         stream: bool = False,
+        generation_seed: Optional[int] = None,
+        oov_policy: str = "error",
+        oov_fallback_code: Optional[str] = None,
         ) -> None:
     
     while True:
@@ -145,10 +148,18 @@ def user_interface(
             continue
 
         try:
-            single_context = ilm.format_context(string, tokenizer=tokenizer).unsqueeze(0) # turn (T, ) to (1, T)
+            single_context = ilm.format_context(
+                string,
+                tokenizer=tokenizer,
+                oov_policy=oov_policy,
+                fallback_code=oov_fallback_code,
+            ).unsqueeze(0) # turn (T, ) to (1, T)
         except:
             print("Language not recongized!")
             continue
+
+        if generation_seed is not None:
+            ilm.set_seed(generation_seed)
                 
             
         if stream:
