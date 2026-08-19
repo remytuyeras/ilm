@@ -74,8 +74,12 @@ python experiments/check_tokenizer_coverage.py \
 
 ## Frozen Semantic Tokenizer
 
-`semantic_d10.json` is the primary tokenizer. It has a three-coordinate,
-base-64 code with a 10-dimensional PCA projection and spherical k-means.
+`semantic_d10.json` is the primary tokenizer. It uses
+`text-embedding-3-small`, featurewise standardization before PCA, and
+spherical k-means to construct a three-coordinate base-64 code. For
+non-whitespace tokens, surrounding whitespace is stripped for the embedding
+request only. Standalone whitespace uses a tagged placeholder. The original
+lexical spelling remains the tokenizer key.
 
 | Property | Value |
 | --- | ---: |
@@ -86,6 +90,7 @@ base-64 code with a 10-dimensional PCA projection and spherical k-means.
 | PCA dimension | 10 |
 | Clustering seed | 13 |
 | Residual collision repairs | 3,063 |
+| Frozen tokenizer SHA-256 | `419e1d614d35dba1cfcd60c1a8045f6c5b40688b2aaf5bdb1633b0e39c3f6c80` |
 
 The repairs preserve a bijective tokenizer mapping. They are a material
 diagnostic, not a reason to claim that every final path is an unmodified
