@@ -42,3 +42,7 @@ Read [../METHOD.md](../METHOD.md) for the executable protocol and
 [../RESULTS.md](../RESULTS.md) for completed measurements. The method includes
 the optimizer crossover required to interpret cross-implementation reference
 comparisons.
+
+The historical package snapshot for the completed runs is
+[`paper_environment_2026-08.txt`](paper_environment_2026-08.txt). It documents
+provenance only. Use the root `requirements.txt` for a supported environment.

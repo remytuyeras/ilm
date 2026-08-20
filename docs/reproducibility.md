@@ -43,5 +43,18 @@ The complete training matrix and completed metrics are recorded in
 tokenizer checksum, and generation settings. Paper-local tables and figures are
 derived from the tracked result records rather than edited by hand.
 
+## Historical Environment
+
+The completed paper runs used Python 3.9.6 and PyTorch 2.6.0. These versions
+are retained as provenance for the frozen metrics and artifacts. They are not
+the supported development environment because they have known security
+advisories. The repository's current `requirements.txt` specifies the patched
+runtime for new tests and reruns. A rerun under that environment reproduces the
+protocol, not a claim of bitwise-identical historical metrics.
+
+The complete package snapshot is recorded in
+[`experiments/evaluation/paper_environment_2026-08.txt`](../experiments/evaluation/paper_environment_2026-08.txt).
+It is a historical manifest, not an installable requirements file.
+
 See [training.md](training.md) and [evaluation.md](evaluation.md) for the
 training, teacher-forced BPB, generation, and aggregation commands.

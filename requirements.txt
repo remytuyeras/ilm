@@ -1,8 +1,8 @@
 pandas>=1.0.0
 numpy>=1.18.0
 tqdm>=4.0.0
-pytest==8.3.5
-torch==2.6.0
+pytest==9.0.3
+torch==2.8.0
 scikit-learn==1.6.1
 openai>=1.0.0
 python-dotenv>=1.0.0

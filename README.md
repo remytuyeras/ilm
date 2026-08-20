@@ -186,9 +186,12 @@ The repository-facing guides are collected in [docs/README.md](docs/README.md).
 
 ## Installation
 
-Install the dependencies with:
+ILM requires Python 3.10 or newer. Create a virtual environment and install the
+dependencies with:
 
 ```bash
+python3.12 -m venv venv
+source venv/bin/activate
 pip install -r requirements.txt
 ```
 
