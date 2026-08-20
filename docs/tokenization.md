@@ -11,7 +11,7 @@ to encode and decode text.
 | --- | --- | --- | --- |
 | Training corpus | `data/corpora/` | Only for builds and training | Track selected sources |
 | Tokenizer mapping | `data/tokenizers/*.json` | Yes | Track released mappings |
-| Semantic labels | `data/tokenizers/*.semantic.json` | No | Track selected analyses |
+| Semantic labels | `data/tokenizers/*.semantic.json` | No | Optional analysis artifact |
 | Build manifest | `data/tokenizers/*.manifest.json` | No | Track |
 | Embedding cache | `data/cache/*.embeddings.npz` | No | Ignore |
 
@@ -22,6 +22,29 @@ the configured embedding model so PCA and clustering can be rerun without a
 new API request.
 
 ## Build a Tokenizer
+
+`tests/quickstart.py` is the command-line entry point for building and loading
+tokenizers without writing Python. It exposes the same builder settings as the
+SDK and prints a tokenization round trip after completing the requested action.
+
+```bash
+python tests/quickstart.py \
+  --mode build \
+  --method embedding-cluster \
+  --source-file data/corpora/training_old_english.txt \
+  --target-file data/tokenizers/my_tokenizer.json \
+  --cluster-method spherical-kmeans \
+  --reduced-dim 10 \
+  --embedding-batch-size 512 \
+  --cache-file data/cache/my_tokenizer.embeddings.npz \
+  --collision-report-limit 50
+```
+
+Embedding-cluster builds require `OPENAI_API_KEY`. The build writes a portable
+JSON mapping and, when requested, a local embedding cache. `--reduced-dim 10`
+is the maintained starting point for the embedding-cluster method.
+
+The equivalent SDK call is:
 
 ```python
 from ilm.tokenizer import create_tokenizer
@@ -39,6 +62,11 @@ tokenizer, detokenizer = create_tokenizer(
 Use an explicit `cache_file` for a released tokenizer. The SDK otherwise puts
 the cache next to the target JSON, which is convenient for a one-off local
 build but mixes a large regenerable file with portable artifacts.
+
+Use `--lossless-tokenization` with `tests/quickstart.py`, or
+`lossless_tokenization=True` in the SDK, when every source character must be
+represented. This is required for byte-normalized evaluation on arbitrary text
+such as enwik8.
 
 For a semantic-label sidecar, add:
 

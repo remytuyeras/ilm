@@ -37,11 +37,11 @@ python experiments/check_tokenizer_coverage.py \
   --oov-policy error
 ```
 
-The complete training matrix, metrics, and completion checklist are in
-[metric_evidence_plan.md](../experiments/evaluation/metric_evidence_plan.md).
-Run outputs should preserve their seed, configuration, corpus checksum,
-tokenizer checksum, and generation settings. Tables and figures selected for a
-manuscript are copied into `paper/artifacts/` and `paper/figures/`.
+The complete training matrix and completed metrics are recorded in
+[experiments/METHOD.md](../experiments/METHOD.md) and
+[experiments/RESULTS.md](../experiments/RESULTS.md). Run outputs should preserve their seed, configuration, corpus checksum,
+tokenizer checksum, and generation settings. Paper-local tables and figures are
+derived from the tracked result records rather than edited by hand.
 
 See [training.md](training.md) and [evaluation.md](evaluation.md) for the
 training, teacher-forced BPB, generation, and aggregation commands.

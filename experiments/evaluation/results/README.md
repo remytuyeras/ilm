@@ -1,8 +1,8 @@
 # Results
 
-Store generated seed-level metrics and aggregate tables here. Copy only the
-frozen tables and figures cited by a manuscript to `paper/artifacts/` and
-`paper/figures/`.
+Store generated seed-level metrics and aggregate tables here. The manuscript
+build script derives its cited tables and figures from these reports and writes
+them to `papers/preprint/artifacts/` and `papers/preprint/figures/`.
 
 The completed controlled-experiment summary is maintained in
 [`../../RESULTS.md`](../../RESULTS.md). It reports the three-seed BPB tables,

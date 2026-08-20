@@ -139,7 +139,6 @@ of each component.
 ## Source Artifacts
 
 Seed-level reports are stored in [evaluation/results/](evaluation/results/).
-Checkpoint metadata, including architecture, optimizer settings, validation
-history, and observed training bytes, is stored in
-[../models/evaluation/](../models/evaluation/). Commands for every family and
-the crossover are recorded in [METHOD.md](METHOD.md).
+Commands for every family and the optimizer crossover are recorded in
+[METHOD.md](METHOD.md). Checkpoints are local generated artifacts and are not
+part of the repository release.

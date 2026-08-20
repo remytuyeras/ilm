@@ -14,9 +14,7 @@ data/corpora/training_old_english.txt
 ```
 
 Override either path with `--tokenizer-json` or `--training-text`. The
-checkpoint metadata records the paths used by that run. Older release metadata
-may name the pre-reorganization `data/` paths and should be treated as a
-historical record.
+checkpoint metadata records the paths used by that run.
 
 ## Configuration Layers
 
@@ -53,6 +51,8 @@ python experiments/prepare_text_split.py \
 Then train with frozen tokenizer and explicit split inputs:
 
 ```bash
+mkdir -p models/evaluation
+
 python sandbox/sandbox.py create models/evaluation/c_full_seed13.pth \
   --seed 13 \
   --tokenizer-json experiments/evaluation/tokenizers/semantic_d10.json \
@@ -101,8 +101,45 @@ excludes an incomplete word suffix at the left boundary of a sampled training
 window from the cross-entropy average. The options can be enabled separately or
 together. The objective requires `word_block_size == block_size // syllable_num`.
 
-## Released Checkpoints
+Together, the three options define Full ILM. Flat ILM uses the same frozen
+coordinate stream with all three options disabled. See
+[architecture.md](architecture.md) for the corresponding equations and
+compatibility implications.
 
-`models/release/` contains selected sanitized checkpoints and metadata. Local
-checkpoints and experimental runs remain ignored because they can be large and
-are tied to a specific training run.
+## Practical Training Guidance
+
+Start a new checkpoint when changing an architecture option, `embedding_dim`,
+`head_num`, `layer_num`, `block_size`, `word_block_size`, or `syllable_num`.
+These choices alter tensor shapes or context geometry, so an existing checkpoint
+cannot safely be continued under the new configuration.
+
+For a continued run with unchanged architecture, use `improve` and choose a
+new semantic version level explicitly:
+
+```bash
+python sandbox/sandbox.py improve models/local_model.pth \
+  --patch \
+  --dropout 0.5 \
+  --epoch-num 2000 \
+  --lr 1e-4
+```
+
+Training loss is useful for comparing runs with the same tokenizer, objective,
+and data split. It is not directly comparable across different event spaces or
+different loss masks. Always inspect validation loss, held-out BPB for controlled
+experiments, and fixed-prompt generations. A lower training loss alone does not
+guarantee more coherent free-running text.
+
+Common generation failures include short repetition loops, dominant generic
+phrases, and invalid unoccupied coordinate codes. Before altering the model,
+first confirm that the tokenizer, architecture flags, and sampling parameters
+match the checkpoint metadata. Then compare fixed prompts with a fixed
+generation seed. Coordinate-aware sampling is documented in
+[decoding.md](decoding.md).
+
+## Checkpoint Policy
+
+Checkpoints and local run metadata are generated artifacts and are ignored by
+default. The reproducible study tracks frozen tokenizers, split manifests,
+training commands, configurations, and seed-level evaluation reports instead.
+Use a separate archival release when distributing model weights is required.

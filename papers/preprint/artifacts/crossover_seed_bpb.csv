@@ -1,0 +1,25 @@
+family_key,corpus,tier,family,seed,bpb,parameters,evaluation_mode,scored_source_bytes,scored_events,report
+tiny_char_ilm,Tiny Shakespeare,6.5M,Character GPT,13,2.6653615417015697,6525600,full-context,109477.0,109477,experiments/evaluation/results/char_gpt_6m_all_parameters_constant_seed13.test_metrics.json
+tiny_char_ilm,Tiny Shakespeare,6.5M,Character GPT,29,2.6081356548021595,6525600,full-context,109477.0,109477,experiments/evaluation/results/char_gpt_6m_all_parameters_constant_seed29.test_metrics.json
+tiny_char_ilm,Tiny Shakespeare,6.5M,Character GPT,47,2.678215972871732,6525600,full-context,109477.0,109477,experiments/evaluation/results/char_gpt_6m_all_parameters_constant_seed47.test_metrics.json
+tiny_flat_ilm,Tiny Shakespeare,6.5M,Flat ILM,13,2.159404435995637,6555064,full-context,109477.66666666759,92297,experiments/evaluation/results/c_flat_6m_seed13.test_metrics.json
+tiny_flat_ilm,Tiny Shakespeare,6.5M,Flat ILM,29,2.1475337903976626,6555064,full-context,109477.66666666759,92297,experiments/evaluation/results/c_flat_6m_seed29.test_metrics.json
+tiny_flat_ilm,Tiny Shakespeare,6.5M,Flat ILM,47,2.1454413416338016,6555064,full-context,109477.66666666759,92297,experiments/evaluation/results/c_flat_6m_seed47.test_metrics.json
+tiny_char_nanogpt,Tiny Shakespeare,6.5M,Character GPT,13,2.7347657492832744,6525600,full-context,109477.0,109477,experiments/evaluation/results/char_gpt_6m_seed13.test_metrics.json
+tiny_char_nanogpt,Tiny Shakespeare,6.5M,Character GPT,29,2.7016438993796377,6525600,full-context,109477.0,109477,experiments/evaluation/results/char_gpt_6m_seed29.test_metrics.json
+tiny_char_nanogpt,Tiny Shakespeare,6.5M,Character GPT,47,2.713838973166473,6525600,full-context,109477.0,109477,experiments/evaluation/results/char_gpt_6m_seed47.test_metrics.json
+tiny_flat_nanogpt,Tiny Shakespeare,6.5M,Flat ILM,13,2.1269602414159383,6555064,full-context,109477.66666666759,92297,experiments/evaluation/results/c_flat_6m_nanogpt_cosine_seed13.test_metrics.json
+tiny_flat_nanogpt,Tiny Shakespeare,6.5M,Flat ILM,29,2.1184273274412835,6555064,full-context,109477.66666666759,92297,experiments/evaluation/results/c_flat_6m_nanogpt_cosine_seed29.test_metrics.json
+tiny_flat_nanogpt,Tiny Shakespeare,6.5M,Flat ILM,47,2.1206331248023096,6555064,full-context,109477.66666666759,92297,experiments/evaluation/results/c_flat_6m_nanogpt_cosine_seed47.test_metrics.json
+enwik_byte_ilm,enwik8,6.5M,Byte GPT,13,2.496670617072063,6567600,block-reset,4999958.0,4999958,experiments/evaluation/results/enwik8_byte_gpt_6m_all_parameters_constant_seed13.test_metrics.json
+enwik_byte_ilm,enwik8,6.5M,Byte GPT,29,2.4775232325089016,6567600,block-reset,4999958.0,4999958,experiments/evaluation/results/enwik8_byte_gpt_6m_all_parameters_constant_seed29.test_metrics.json
+enwik_byte_ilm,enwik8,6.5M,Byte GPT,47,2.46478582769697,6567600,block-reset,4999958.0,4999958,experiments/evaluation/results/enwik8_byte_gpt_6m_all_parameters_constant_seed47.test_metrics.json
+enwik_flat_ilm,enwik8,6.5M,Flat ILM,13,2.3365112321518575,6561064,block-reset,4999940.25,5605600,experiments/evaluation/results/enwik8_lossless_s4_c_flat_6m_seed13.test_metrics.json
+enwik_flat_ilm,enwik8,6.5M,Flat ILM,29,2.3348550756605735,6561064,block-reset,4999940.25,5605600,experiments/evaluation/results/enwik8_lossless_s4_c_flat_6m_seed29.test_metrics.json
+enwik_flat_ilm,enwik8,6.5M,Flat ILM,47,2.3280253210874347,6561064,block-reset,4999940.25,5605600,experiments/evaluation/results/enwik8_lossless_s4_c_flat_6m_seed47.test_metrics.json
+enwik_byte_nanogpt,enwik8,6.5M,Byte GPT,13,2.6418315777483428,6567600,block-reset,4999958.0,4999958,experiments/evaluation/results/enwik8_byte_gpt_6m_seed13.test_metrics.json
+enwik_byte_nanogpt,enwik8,6.5M,Byte GPT,29,2.642898988591588,6567600,block-reset,4999958.0,4999958,experiments/evaluation/results/enwik8_byte_gpt_6m_seed29.test_metrics.json
+enwik_byte_nanogpt,enwik8,6.5M,Byte GPT,47,2.635640336071927,6567600,block-reset,4999958.0,4999958,experiments/evaluation/results/enwik8_byte_gpt_6m_seed47.test_metrics.json
+enwik_flat_nanogpt,enwik8,6.5M,Flat ILM,13,2.306483382492856,6561064,block-reset,4999940.25,5605600,experiments/evaluation/results/enwik8_lossless_s4_c_flat_6m_nanogpt_cosine_seed13.test_metrics.json
+enwik_flat_nanogpt,enwik8,6.5M,Flat ILM,29,2.3080151239291204,6561064,block-reset,4999940.25,5605600,experiments/evaluation/results/enwik8_lossless_s4_c_flat_6m_nanogpt_cosine_seed29.test_metrics.json
+enwik_flat_nanogpt,enwik8,6.5M,Flat ILM,47,2.3102150836230955,6561064,block-reset,4999940.25,5605600,experiments/evaluation/results/enwik8_lossless_s4_c_flat_6m_nanogpt_cosine_seed47.test_metrics.json

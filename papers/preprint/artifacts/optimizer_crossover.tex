@@ -1,0 +1,12 @@
+\begin{tabular}{lrrrr}
+\toprule
+& \multicolumn{4}{c}{\textbf{Optimizer protocol}} \\
+\cmidrule(lr){2-5}
+& \multicolumn{2}{c}{ILM AdamW} & \multicolumn{2}{c}{nanoGPT AdamW} \\
+\cmidrule(lr){2-3} \cmidrule(lr){4-5}
+Corpus & Reference GPT & Flat ILM & Reference GPT & Flat ILM \\
+\midrule
+Tiny Shakespeare & 2.6506 $\pm$ 0.0373 & 2.1508 $\pm$ 0.0075 & 2.7167 $\pm$ 0.0168 & 2.1220 $\pm$ 0.0044 \\
+enwik8 & 2.4797 $\pm$ 0.0160 & 2.3331 $\pm$ 0.0045 & 2.6401 $\pm$ 0.0039 & 2.3082 $\pm$ 0.0019 \\
+\bottomrule
+\end{tabular}

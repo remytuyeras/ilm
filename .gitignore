@@ -2,11 +2,18 @@
 sandbox/try_*
 models/*
 !models/
-!models/release/
-!models/release/*.pth
-!models/release/*.json
 reflect/
+experiments/*_priv.md
+experiments/**/*_priv.md
+# Private experiment-writing material retained locally.
+experiments/ABSTRACT.md
+experiments/DISCUSSION.md
+experiments/INTRO.md
+experiments/evaluation/metric_evidence_plan.md
+# Optional LLM or nearest-centroid labels are analysis artifacts, not model inputs.
+experiments/evaluation/tokenizers/*.semantic.json
 *.backup.*
+.DS_Store
 data/cache/*
 !data/cache/.gitignore
 experiments/**/runs/*
@@ -17,7 +24,17 @@ comparisons/reports/
 comparisons/outputs/backup/
 !comparisons/outputs/
 todo_*
-papers/
+# Keep private manuscript work out of the repository after `paper/` is renamed
+# to `papers/`, while retaining the reproducible preprint source tree.
+papers/*
+!papers/preprint/
+!papers/preprint/**
+papers/preprint/*.tex
+papers/preprint/*.bib
+papers/preprint/*.md
+papers/preprint/*.sh
+papers/preprint/*.pdf
+data/corpora/enwik8
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

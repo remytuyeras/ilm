@@ -1,9 +1,7 @@
 # Method
 
-This file records the executable protocol for controlled ILM experiments. It
-separates reproducible procedures from the interpretation in
-[DISCUSSION.md](DISCUSSION.md) and the completed measurements in
-[RESULTS.md](RESULTS.md).
+This file records the executable protocol for the controlled ILM experiments.
+The completed measurements are reported in [RESULTS.md](RESULTS.md).
 
 ## Experimental Protocol At A Glance
 
@@ -371,8 +369,8 @@ done
 ```
 
 All Tiny Shakespeare model families use explicit train, validation, and test
-files, a shared 6,000-step horizon, and held-out test BPB. The detailed matrix is maintained in
-[evaluation/metric_evidence_plan.md](evaluation/metric_evidence_plan.md).
+files, a shared 6,000-step horizon, and held-out test BPB. Completed outcomes
+are recorded in [RESULTS.md](RESULTS.md).
 
 ### Seed 13
 
@@ -848,6 +846,9 @@ format and constructs a 65-character vocabulary from the complete corpus.
 
 ```bash
 git clone https://github.com/karpathy/nanoGPT.git baselines/nanoGPT
+git -C baselines/nanoGPT checkout 3adf61e154c3fe3fca428ad6bc3818b27a3b8291
+git -C baselines/nanoGPT apply \
+  ../../experiments/evaluation/patches/nanogpt_controlled_baseline.patch
 
 python experiments/prepare_nanogpt_char.py \
   --corpus-file data/corpora/training_old_english.txt \
@@ -859,8 +860,8 @@ python experiments/prepare_nanogpt_char.py \
 
 `experiments/evaluation/configs/nanogpt_char_6m.py` defines a 6.50M-parameter
 baseline with six layers, width 300, six attention heads, 74-character context,
-batch size 32, dropout 0.5, and seed 13. The local nanoGPT checkout has a
-minimal seed option so the normal `1337` base seed can be overridden.
+batch size 32, dropout 0.5, and seed 13. The repository patch adds the
+configurable seed used by the controlled runs.
 
 For a later seed `N`, override both the random seed and output directory while
 using the same configuration file:
@@ -1265,14 +1266,6 @@ done
 The character baseline remains directly applicable because enwik8 is a
 byte-level benchmark. The semantic ILM result uses four coordinate roles and
 must be reported separately from the three-coordinate Tiny Shakespeare result.
-
-## BPE Baseline Status
-
-The BPE-GPT baseline is planned but not yet implemented. It must be
-from-scratch, parameter-matched, evaluated in BPB, and trained on the same
-model-data split. Its BPE vocabulary should follow the same complete-frozen-
-corpus tokenization policy as ILM. Do not substitute a pretrained or
-fine-tuned GPT-2 checkpoint for this controlled baseline.
 
 ## Result Discipline
 

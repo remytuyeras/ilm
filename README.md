@@ -1,20 +1,48 @@
 <p align="center">
   <p align="center"><img src="img/logo_georgia.png" width="400px" /></p>
-  <p align="center"><em>A toolkit for language models based on hierarchical tokenization</em></p>
+  <p align="center"><em>A toolkit for constructive language models based on coordinate tokenization</em></p>
 </p>
 
 # Introduction
 
 ### Definition and motivations
 
-**Intuitionistic Language Models (ILM)** is a research-driven toolkit for building language models on top of hierarchical tokenization. Instead of giving each word one opaque entry in a large vocabulary, ILM represents it as a composition of a few smaller coordinates arranged across several levels.
+**Intuitionistic Language Models (ILM)** is a research toolkit for language
+models built on constructive coordinate tokenization. Instead of assigning each
+lexical entry one opaque ID in a large vocabulary, ILM represents it as a short
+sequence of smaller coordinates with fixed roles within the construction.
 
-The repository currently ships four pieces:
+The repository provides:
 
 - the original **relative-position tokenizer**,
 - a newer **embedding-cluster tokenizer** built on PCA and residual centroid coding,
 - **semantic spelling exports** for inspecting what a tokenizer has learned, and
-- a small **transformer sandbox** for training experiments.
+- a decoder-only **Flat ILM** Transformer that predicts the flattened coordinate stream,
+- optional **Full ILM** coordinate-role input embeddings, output heads, and a
+  word-prefix training objective, and
+- a reproducible experiment harness with fixed splits, BPB evaluation, and
+  reference-model controls.
+
+### Flat ILM and Full ILM
+
+Flat ILM uses a standard causal Transformer over the flattened coordinate
+stream. It changes the model's prediction events, not the causal attention
+mechanism. A three-coordinate word is generated through three base-64 decisions
+in sequence.
+
+Full ILM keeps the same Transformer stack and adds three independently enabled
+features:
+
+- **Coordinate-role input embeddings** give the same coordinate value a
+  different learned embedding at each role in a code.
+- **Coordinate-role output heads** use a distinct prediction head for each
+  next-coordinate role.
+- **Word-prefix objective** excludes training losses whose conditioning context
+  begins inside the incomplete suffix of a lexical code.
+
+The architecture and loss are described in [docs/architecture.md](docs/architecture.md).
+The controlled results and their limitations are recorded in
+[experiments/RESULTS.md](experiments/RESULTS.md).
 
 ### Why "intuitionistic"?
 
@@ -147,8 +175,11 @@ This repository provides tools to:
 - **`data/tokenizers/`**: portable tokenizer mappings and selected semantic-label sidecars.
 - **`data/cache/`**: local embedding caches. These are regenerable and intentionally not committed.
 - **`experiments/`**: fixed configurations, split manifests, prompts, and result records for reproducible studies.
-- **`models/`**: local checkpoints, with selected release checkpoints under `models/release/`.
-- **`docs/`**, **`img/`**: repository documentation and documentation images.
+- **`models/`**: local checkpoints and metadata. Checkpoints are ignored by
+  default because they are large generated artifacts.
+- **`docs/`**: maintained guides for tokenization, architecture, training,
+  decoding, evaluation, and reproducibility.
+- **`img/`**: documentation images.
 
 For command-by-command instructions on the scripts, see [HOWTO.md](HOWTO.md).
 The repository-facing guides are collected in [docs/README.md](docs/README.md).
@@ -162,6 +193,43 @@ pip install -r requirements.txt
 ```
 
 ## Quickstart
+
+### Command-line tokenizer build
+
+The quickest way to inspect or build a tokenizer is the SDK playground:
+
+```bash
+python tests/quickstart.py \
+  --mode build \
+  --method embedding-cluster \
+  --source-file data/corpora/training_old_english.txt \
+  --target-file data/tokenizers/my_tokenizer.json \
+  --cluster-method spherical-kmeans \
+  --reduced-dim 10
+```
+
+Embedding-cluster builds require `OPENAI_API_KEY`. See
+[docs/tokenization.md](docs/tokenization.md) for cache, collision-report,
+lossless-tokenization, diagnostic, and semantic-sidecar options.
+
+### Full ILM training
+
+Use the sandbox to create a Full ILM checkpoint with all three ILM features:
+
+```bash
+python sandbox/sandbox.py create models/my_full_ilm.pth \
+  --ilm-input-embeddings \
+  --ilm-output-heads \
+  --ilm-objective \
+  --dropout 0.5 \
+  --epoch-num 4000 \
+  --lr 1e-3
+```
+
+For a controlled run, use explicit train, validation, and test files rather
+than the sandbox's historical implicit split. The exact workflow is documented
+in [docs/training.md](docs/training.md) and
+[docs/reproducibility.md](docs/reproducibility.md).
 
 ### Using the code in the repo
 

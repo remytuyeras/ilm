@@ -1,17 +1,15 @@
 {
   "study": "controlled_evaluation",
-  "status": "planned",
+  "status": "completed",
   "source_corpus": {
     "path": "data/corpora/training_old_english.txt",
     "sha256": "86c4e6aa9db7c042ec79f339dcb96d42b0075e16b8fc2e86bf0ca57e2dc565ed"
   },
-  "planned_split": {
-    "train_fraction": 0.8,
-    "validation_fraction": 0.1,
-    "test_fraction": 0.1,
-    "policy": "contiguous raw-text split with an explicit context gap"
+  "split_protocol": {
+    "tinyshakespeare": "line-aligned train, validation, and test ranges with a context gap",
+    "enwik8": "canonical contiguous 90M/5M/5M byte partition"
   },
-  "model_seeds": [13, 29, 47, 71, 101],
-  "primary_families": ["C-Flat-6M", "C-Full-6M", "C-Flat-26M", "C-Full-26M"],
-  "evidence_plan": "experiments/evaluation/metric_evidence_plan.md"
+  "model_seeds": [13, 29, 47],
+  "parameter_tiers": ["approximately 6.5M", "approximately 15.5M"],
+  "result_records": "experiments/evaluation/results/"
 }
