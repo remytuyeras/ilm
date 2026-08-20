@@ -24,8 +24,7 @@ comparisons/reports/
 comparisons/outputs/backup/
 !comparisons/outputs/
 todo_*
-# Keep private manuscript work out of the repository after `paper/` is renamed
-# to `papers/`, while retaining the reproducible preprint source tree.
+# Keep private manuscript work out of the repository
 papers/*
 !papers/preprint/
 !papers/preprint/**
