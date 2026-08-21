@@ -13,6 +13,7 @@ experiments/evaluation/metric_evidence_plan.md
 # Optional LLM or nearest-centroid labels are analysis artifacts, not model inputs.
 experiments/evaluation/tokenizers/*.semantic.json
 *.backup.*
+*/.DS_Store
 .DS_Store
 data/cache/*
 !data/cache/.gitignore
