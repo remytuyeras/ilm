@@ -324,11 +324,28 @@ controls remain internally matched.
 
 `Random-Flat-6M` uses the same lexical vocabulary, final set of 15,030 code
 strings, coordinate base, code depth, and source segmentation as
-`C-Flat-6M`. It applies one fixed random permutation to the assignment from
-lexical entries to final code strings. This removes the semantic association
-between words and their codes without changing code occupancy or coordinate
-marginals. The permutation is frozen with seed `314159` and is shared across
-all model seeds.
+`C-Flat-6M`. Each assignment applies one fixed random permutation to the
+assignment from lexical entries to final code strings. This removes the semantic association
+between words and their codes without changing code occupancy or type-level
+coordinate marginals. Corpus-frequency-weighted coordinate marginals are not
+preserved. Each fixed permutation is shared across model seeds `13`, `29`, and
+`47`.
+
+The permutation index is an independent representation replicate. It is not a
+model-training seed. The original completed control remains index `1` and
+keeps its legacy filenames. Indices `2` and `3` add twelve new training and
+evaluation runs across the two corpora.
+
+| Permutation index | Permutation seed | Tiny Shakespeare result prefix | enwik8 result prefix | Status |
+| ---: | ---: | --- | --- | --- |
+| `1` | `314159` | `random_flat_6m` | `enwik8_lossless_s4_random_flat_6m` | completed |
+| `2` | `271828` | `random_2_flat_6m` | `enwik8_lossless_s4_random_2_flat_6m` | completed |
+| `3` | `161803` | `random_3_flat_6m` | `enwik8_lossless_s4_random_3_flat_6m` | completed |
+
+The final analysis should summarize each permutation index over its three
+model seeds, then compare the three permutation-level effects with Flat ILM.
+It should not present the nine Permuted Flat runs as nine exchangeable model
+seeds.
 
 ```bash
 python experiments/create_permuted_tokenizer.py \
@@ -365,6 +382,51 @@ for seed in 13 29 47; do
     --word-block-size 20 --block-size 60 \
     --embedding-dim 300 --head-num 6 --layer-num 6 --dropout 0.5 \
     --output-file experiments/evaluation/results/random_flat_6m_seed$seed.test_metrics.json
+done
+```
+
+### Additional permutation replicates
+
+Create, train, and evaluate the two additional Tiny Shakespeare code
+assignments. The completed index-`1` files are not overwritten. Indices `2`
+and `3` are now completed and retained as rerunnable commands.
+
+```bash
+for index in 2 3; do
+  case $index in
+    2) permutation_seed=271828 ;;
+    3) permutation_seed=161803 ;;
+  esac
+  tokenizer=experiments/evaluation/tokenizers/control_permuted_codes_s3_seed$permutation_seed.json
+
+  python experiments/create_permuted_tokenizer.py \
+    --source-tokenizer experiments/evaluation/tokenizers/semantic_d10.json \
+    --target-tokenizer $tokenizer \
+    --permutation-seed $permutation_seed
+
+  for seed in 13 29 47; do
+    python sandbox/sandbox.py create models/evaluation/random_${index}_flat_6m_seed$seed.pth \
+      --seed $seed \
+      --tokenizer-json $tokenizer \
+      --train-text experiments/evaluation/splits/tinyshakespeare/train.txt \
+      --validation-text experiments/evaluation/splits/tinyshakespeare/validation.txt \
+      --test-text experiments/evaluation/splits/tinyshakespeare/test.txt \
+      --oov-policy error \
+      --syllable-num 3 --word-block-size 20 --block-size 60 \
+      --embedding-dim 300 --head-num 6 --layer-num 6 --batch-size 32 \
+      --dropout 0.5 --epoch-num 6000 --lr 0.001 \
+      --validation-interval 500 --no-interactive
+
+    python experiments/evaluate_ilm.py \
+      --model-path models/evaluation/random_${index}_flat_6m_seed$seed.pth \
+      --tokenizer-json $tokenizer \
+      --test-text experiments/evaluation/splits/tinyshakespeare/test.txt \
+      --seed $seed --oov-policy error --require-lossless-encoding \
+      --evaluation-batch-size 32 \
+      --syllable-num 3 --word-block-size 20 --block-size 60 \
+      --embedding-dim 300 --head-num 6 --layer-num 6 --dropout 0.5 \
+      --output-file experiments/evaluation/results/random_${index}_flat_6m_seed$seed.test_metrics.json
+  done
 done
 ```
 
@@ -1147,7 +1209,9 @@ done
 `Random-Flat-6M` preserves enwik8's lossless lexical segmentation and the exact final set of occupied
 four-coordinate codes. One fixed permutation changes only the assignment from
 lexical entries to those codes. The permutation seed is independent of the
-three model seeds and must remain fixed for the full ablation.
+three model seeds and must remain fixed for the full ablation. The shared
+permutation-index mapping appears in the Tiny Shakespeare permutation-control
+section above. The same index and permutation seed are used for both corpora.
 
 ```bash
 python experiments/create_permuted_tokenizer.py \
@@ -1181,6 +1245,52 @@ for seed in 13 29 47; do
     --syllable-num 4 --word-block-size 20 --block-size 80 \
     --embedding-dim 300 --head-num 6 --layer-num 6 --dropout 0.5 \
     --output-file experiments/evaluation/results/enwik8_lossless_s4_random_flat_6m_seed$seed.test_metrics.json
+done
+```
+
+### Additional permutation replicates
+
+Run the same two representation replicates on enwik8. Together with the Tiny
+Shakespeare commands above, this produces twelve new train-and-evaluate runs:
+two permutation indices, two corpora, and three model seeds. All twelve runs
+are completed. The original index-`1` reports remain unchanged.
+
+```bash
+for index in 2 3; do
+  case $index in
+    2) permutation_seed=271828 ;;
+    3) permutation_seed=161803 ;;
+  esac
+  tokenizer=experiments/evaluation/tokenizers/enwik8_lossless_permuted_codes_s4_seed$permutation_seed.json
+
+  python experiments/create_permuted_tokenizer.py \
+    --source-tokenizer experiments/evaluation/tokenizers/enwik8_lossless_semantic_d10_s4.json \
+    --target-tokenizer $tokenizer \
+    --permutation-seed $permutation_seed
+
+  for seed in 13 29 47; do
+    python sandbox/sandbox.py create models/evaluation/enwik8_lossless_s4_random_${index}_flat_6m_seed$seed.pth \
+      --seed $seed \
+      --tokenizer-json $tokenizer \
+      --train-text experiments/evaluation/splits/enwik8/train.txt \
+      --validation-text experiments/evaluation/splits/enwik8/validation.txt \
+      --test-text experiments/evaluation/splits/enwik8/test.txt \
+      --oov-policy error \
+      --syllable-num 4 --word-block-size 20 --block-size 80 \
+      --embedding-dim 300 --head-num 6 --layer-num 6 --batch-size 32 \
+      --dropout 0.5 --epoch-num 6000 --lr 0.001 \
+      --validation-interval 500 --no-interactive
+
+    python experiments/evaluate_ilm.py \
+      --model-path models/evaluation/enwik8_lossless_s4_random_${index}_flat_6m_seed$seed.pth \
+      --tokenizer-json $tokenizer \
+      --test-text experiments/evaluation/splits/enwik8/test.txt \
+      --seed $seed --oov-policy error --require-lossless-encoding \
+      --evaluation-mode block-reset --evaluation-batch-size 128 \
+      --syllable-num 4 --word-block-size 20 --block-size 80 \
+      --embedding-dim 300 --head-num 6 --layer-num 6 --dropout 0.5 \
+      --output-file experiments/evaluation/results/enwik8_lossless_s4_random_${index}_flat_6m_seed$seed.test_metrics.json
+  done
 done
 ```
 

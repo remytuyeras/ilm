@@ -35,6 +35,10 @@ papers/preprint/*.md
 papers/preprint/*.sh
 papers/preprint/*.pdf
 data/corpora/enwik8
+
+# Local historical environment for paper reruns. The tracked provenance manifest
+# remains at experiments/evaluation/paper_environment_2026-08.txt.
+requirements-paper.txt
 venv*/
 
 # Byte-compiled / optimized / DLL files

@@ -6,10 +6,12 @@ useful qualitative evidence, but they are not substituted for BPB.
 
 ## Reading The Tables
 
-Lower bits per UTF-8 byte (BPB) is better. Values are the mean over three
-independently trained seeds, `13`, `29`, and `47`. `+/-` denotes the sample
-standard deviation. All reported models were trained from scratch for 6,000
-updates on the frozen corpus splits.
+Lower bits per UTF-8 byte (BPB) is better. Unless noted otherwise, values are
+the mean over independently trained seeds `13`, `29`, and `47`, and `+/-`
+denotes their sample standard deviation. The replicated Permuted Flat control
+has two levels of variation: three assignment seeds, each evaluated with the
+same three model-training seeds. All reported models were trained from scratch
+for 6,000 updates on the frozen corpus splits.
 
 Tiny Shakespeare uses full-context teacher-forced evaluation. enwik8 uses
 block-reset teacher-forced evaluation because its test split contains five
@@ -52,27 +54,51 @@ controls because they use the same ILM implementation and optimizer protocol.
 ## 6.5M Results
 
 The Tiny Shakespeare tokenizer maps 15,030 lexical entries to three base-64
-coordinates. Permuted Flat uses the same final code set and lexical segmentation
-as Flat ILM, but applies the fixed code permutation with seed `314159`.
+coordinates. The replicated Permuted Flat control uses the same final code set
+and lexical segmentation as Flat ILM while varying only the lexical-entry-to-code
+assignment. Its assignment-level results appear after the primary model-family
+tables.
 
 | Tiny Shakespeare family | Parameters | Mean BPB +/- SD | Seed BPB values |
 | --- | ---: | ---: | --- |
 | Character GPT | 6,525,600 | 2.650571 +/- 0.037308 | 2.665362, 2.608136, 2.678216 |
 | Atomic Lexical | 6,469,374 | 2.320493 +/- 0.024002 | 2.305153, 2.308174, 2.348153 |
-| Permuted Flat | 6,555,064 | 2.296561 +/- 0.011518 | 2.289941, 2.309861, 2.289881 |
 | Flat ILM | 6,555,064 | 2.150793 +/- 0.007531 | 2.159404, 2.147534, 2.145441 |
 | Full ILM | 6,631,992 | **2.120122 +/- 0.008608** | 2.123232, 2.126744, 2.110392 |
 
 | enwik8 family | Parameters | Mean BPB +/- SD | Seed BPB values |
 | --- | ---: | ---: | --- |
 | Byte GPT | 6,567,600 | 2.479660 +/- 0.016049 | 2.496671, 2.477523, 2.464786 |
-| Permuted Flat | 6,561,064 | 2.504098 +/- 0.009986 | 2.493390, 2.505747, 2.513156 |
 | Flat ILM | 6,561,064 | 2.333131 +/- 0.004498 | 2.336511, 2.334855, 2.328025 |
 | Full ILM | 6,676,456 | **2.235895 +/- 0.006256** | 2.235785, 2.242206, 2.229695 |
 
-At this tier, embedding-derived Flat ILM improves over Permuted Flat by
-`0.145768` BPB on Tiny Shakespeare and `0.170967` BPB on enwik8. Full ILM
-improves over Flat ILM by `0.030671` and `0.097236` BPB respectively.
+Full ILM improves over Flat ILM by `0.030671` BPB on Tiny Shakespeare and by
+`0.097236` BPB on enwik8.
+
+### Replicated Permuted Flat Control
+
+Each row below averages model-training seeds `13`, `29`, and `47` under one
+fixed code assignment. `Delta` is the assignment-level mean BPB minus the
+corresponding Flat ILM mean. The aggregate row is the mean across the three
+independently sampled assignment-level means. It must not be interpreted as a
+mean and standard deviation over nine exchangeable model seeds.
+
+| Assignment seed | Tiny Shakespeare BPB / s.d. | Tiny Delta | enwik8 BPB / s.d. | enwik8 Delta |
+| ---: | ---: | ---: | ---: | ---: |
+| `314159` | 2.296561 +/- 0.011518 | +0.145768 | 2.504098 +/- 0.009986 | +0.170967 |
+| `271828` | 2.293996 +/- 0.016085 | +0.143203 | 2.521013 +/- 0.001390 | +0.187883 |
+| `161803` | 2.294466 +/- 0.004873 | +0.143673 | 2.519387 +/- 0.013009 | +0.186257 |
+| **Mean across assignments** | **2.295008 +/- 0.001366** | **+0.144215** | **2.514833 +/- 0.009332** | **+0.181702** |
+
+The first three rows report the sample standard deviation across model-training
+seeds. The aggregate row reports the sample standard deviation across the three
+assignment-level means.
+
+All nine matched model-seed comparisons are worse under the permuted map on
+each corpus. The type-level code set is preserved, but the control does not
+preserve corpus-frequency-weighted coordinate marginals. It therefore supports
+an effect of the complete lexical-to-code association rather than isolating
+semantic geometry independently of frequency statistics.
 
 ## 15.5M Results
 
@@ -111,7 +137,7 @@ informative.
 
 ## What The Current Evidence Supports
 
-The repeated semantic-versus-permuted-code differences support the claim that
+The replicated semantic-versus-permuted-code differences support the claim that
 the final embedding-cluster code assignment contributes beyond coordinate
 factorization alone. The Atomic Lexical control on Tiny Shakespeare also shows
 that replacing the same lexical vocabulary with atomic learned IDs does not

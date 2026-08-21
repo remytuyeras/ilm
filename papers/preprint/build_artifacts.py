@@ -29,6 +29,7 @@ PAPER_DIR = Path(__file__).resolve().parent
 ARTIFACTS_DIR = PAPER_DIR / "artifacts"
 FIGURES_DIR = PAPER_DIR / "figures"
 SEEDS = (13, 29, 47)
+PERMUTATION_SEEDS = (314159, 271828, 161803)
 SUPERSEDED_ASSETS = (
     ARTIFACTS_DIR / "tinyshakespeare_results.tex",
     ARTIFACTS_DIR / "enwik8_results.tex",
@@ -49,10 +50,18 @@ class Family:
     prefix: str
 
 
+@dataclass(frozen=True)
+class PermutationAssignment:
+    """One independently sampled lexical-entry-to-path reassignment."""
+
+    corpus: str
+    assignment_seed: int
+    prefix: str
+
+
 FAMILIES = (
     Family("tiny_char_6", "Tiny Shakespeare", "6.5M", "Character GPT", 6_525_600, "char_gpt_6m_all_parameters_constant"),
     Family("tiny_atomic_6", "Tiny Shakespeare", "6.5M", "Atomic Lexical", 6_469_374, "atomic_lexical_6m"),
-    Family("tiny_random_6", "Tiny Shakespeare", "6.5M", "Permuted Flat", 6_555_064, "random_flat_6m"),
     Family("tiny_flat_6", "Tiny Shakespeare", "6.5M", "Flat ILM", 6_555_064, "c_flat_6m"),
     Family("tiny_full_6", "Tiny Shakespeare", "6.5M", "Full ILM", 6_631_992, "c_full_6m"),
     Family("tiny_char_15", "Tiny Shakespeare", "15.5M", "Character GPT", 15_438_192, "char_gpt_15m"),
@@ -60,13 +69,26 @@ FAMILIES = (
     Family("tiny_flat_15", "Tiny Shakespeare", "15.5M", "Flat ILM", 15_483_532, "c_flat_15m"),
     Family("tiny_full_15", "Tiny Shakespeare", "15.5M", "Full ILM", 15_601_932, "c_full_15m"),
     Family("enwik_byte_6", "enwik8", "6.5M", "Byte GPT", 6_567_600, "enwik8_byte_gpt_6m_all_parameters_constant"),
-    Family("enwik_random_6", "enwik8", "6.5M", "Permuted Flat", 6_561_064, "enwik8_lossless_s4_random_flat_6m"),
     Family("enwik_flat_6", "enwik8", "6.5M", "Flat ILM", 6_561_064, "enwik8_lossless_s4_c_flat_6m"),
     Family("enwik_full_6", "enwik8", "6.5M", "Full ILM", 6_676_456, "enwik8_lossless_s4_c_full_6m"),
     Family("enwik_byte_15", "enwik8", "15.5M", "Byte GPT", 15_502_872, "enwik8_byte_gpt_15m"),
     Family("enwik_flat_15", "enwik8", "15.5M", "Flat ILM", 15_492_772, "enwik8_lossless_s4_c_flat_15m"),
     Family("enwik_full_15", "enwik8", "15.5M", "Full ILM", 15_670_372, "enwik8_lossless_s4_c_full_15m"),
 )
+
+PERMUTATION_ASSIGNMENTS = (
+    PermutationAssignment("Tiny Shakespeare", 314159, "random_flat_6m"),
+    PermutationAssignment("Tiny Shakespeare", 271828, "random_2_flat_6m"),
+    PermutationAssignment("Tiny Shakespeare", 161803, "random_3_flat_6m"),
+    PermutationAssignment("enwik8", 314159, "enwik8_lossless_s4_random_flat_6m"),
+    PermutationAssignment("enwik8", 271828, "enwik8_lossless_s4_random_2_flat_6m"),
+    PermutationAssignment("enwik8", 161803, "enwik8_lossless_s4_random_3_flat_6m"),
+)
+
+FLAT_KEYS_BY_CORPUS = {
+    "Tiny Shakespeare": "tiny_flat_6",
+    "enwik8": "enwik_flat_6",
+}
 
 CROSSOVER_FAMILIES = (
     Family("tiny_char_ilm", "Tiny Shakespeare", "6.5M", "Character GPT", 6_525_600, "char_gpt_6m_all_parameters_constant"),
@@ -115,6 +137,38 @@ def load_rows(families: tuple[Family, ...] = FAMILIES) -> list[dict[str, Any]]:
     return rows
 
 
+def load_permutation_rows() -> list[dict[str, Any]]:
+    """Load model-seed results nested within independently drawn path maps."""
+    rows: list[dict[str, Any]] = []
+    for assignment in PERMUTATION_ASSIGNMENTS:
+        for seed in SEEDS:
+            path = RESULTS_DIR / f"{assignment.prefix}_seed{seed}.test_metrics.json"
+            if not path.exists():
+                raise FileNotFoundError(f"Missing expected report: {path}")
+            report = json.loads(path.read_text())
+            bpb, source_bytes, events = teacher_fields(report)
+            rows.append(
+                {
+                    "corpus": assignment.corpus,
+                    "tier": "6.5M",
+                    "family": "Permuted Flat",
+                    "assignment_seed": assignment.assignment_seed,
+                    "model_seed": seed,
+                    "bpb": bpb,
+                    "parameters": 6_555_064 if assignment.corpus == "Tiny Shakespeare" else 6_561_064,
+                    "evaluation_mode": report.get(
+                        "evaluation_mode", report["teacher_forced"].get("evaluation_mode", "full-context")
+                    ),
+                    "scored_source_bytes": source_bytes,
+                    "scored_events": events,
+                    "tokenizer_json": report["tokenizer_json"],
+                    "tokenizer_json_sha256": report["tokenizer_json_sha256"],
+                    "report": str(path.relative_to(ROOT)),
+                }
+            )
+    return rows
+
+
 def summarize(rows: list[dict[str, Any]], families: tuple[Family, ...] = FAMILIES) -> list[dict[str, Any]]:
     grouped: dict[str, list[dict[str, Any]]] = defaultdict(list)
     for row in rows:
@@ -143,6 +197,56 @@ def summarize(rows: list[dict[str, Any]], families: tuple[Family, ...] = FAMILIE
     return sorted(summary, key=lambda item: order[item["family_key"]])
 
 
+def summarize_permutation_rows(
+    permutation_rows: list[dict[str, Any]], summary_by_key: dict[str, dict[str, Any]]
+) -> list[dict[str, Any]]:
+    """Summarize each code-map draw over its three nested model seeds."""
+    grouped: dict[tuple[str, int], list[dict[str, Any]]] = defaultdict(list)
+    for row in permutation_rows:
+        grouped[(row["corpus"], row["assignment_seed"])].append(row)
+
+    result: list[dict[str, Any]] = []
+    for (corpus, assignment_seed), group in sorted(grouped.items()):
+        values = [row["bpb"] for row in sorted(group, key=lambda item: item["model_seed"])]
+        flat_mean = summary_by_key[FLAT_KEYS_BY_CORPUS[corpus]]["mean_bpb"]
+        result.append(
+            {
+                "corpus": corpus,
+                "tier": "6.5M",
+                "family": "Permuted Flat",
+                "assignment_seed": assignment_seed,
+                "mean_bpb": statistics.mean(values),
+                "model_seed_sd_bpb": statistics.stdev(values),
+                "flat_mean_bpb": flat_mean,
+                "mean_delta_bpb": statistics.mean(values) - flat_mean,
+                "seed13_bpb": values[0],
+                "seed29_bpb": values[1],
+                "seed47_bpb": values[2],
+                "tokenizer_json": group[0]["tokenizer_json"],
+                "tokenizer_json_sha256": group[0]["tokenizer_json_sha256"],
+            }
+        )
+    return result
+
+
+def aggregate_permutation_assignments(permutation_summary: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Aggregate only across independently sampled maps, never across nine runs."""
+    grouped: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for row in permutation_summary:
+        grouped[row["corpus"]].append(row)
+    return [
+        {
+            "corpus": corpus,
+            "assignment_count": len(group),
+            "mean_bpb": statistics.mean(row["mean_bpb"] for row in group),
+            "assignment_sd_bpb": statistics.stdev(row["mean_bpb"] for row in group),
+            "mean_delta_bpb": statistics.mean(row["mean_delta_bpb"] for row in group),
+            "assignment_sd_delta_bpb": statistics.stdev(row["mean_delta_bpb"] for row in group),
+        }
+        for corpus, group in sorted(grouped.items())
+    ]
+
+
 def write_csv(path: Path, rows: list[dict[str, Any]]) -> None:
     if not rows:
         return
@@ -165,8 +269,8 @@ def format_bpb(row: dict[str, Any] | None) -> str:
 def write_scale_tex_table(path: Path, summary: list[dict[str, Any]], tier: str) -> None:
     by_key = {(row["corpus"], row["family"]): row for row in summary if row["tier"] == tier}
     if tier == "6.5M":
-        tiny_families = ["Character GPT", "Atomic Lexical", "Permuted Flat", "Flat ILM", "Full ILM"]
-        enwik_families = ["Byte GPT", None, "Permuted Flat", "Flat ILM", "Full ILM"]
+        tiny_families = ["Character GPT", "Atomic Lexical", "Flat ILM", "Full ILM"]
+        enwik_families = ["Byte GPT", None, "Flat ILM", "Full ILM"]
     else:
         tiny_families = ["Atomic Lexical", "Flat ILM", "Full ILM"]
         enwik_families = [None, "Flat ILM", "Full ILM"]
@@ -214,6 +318,76 @@ def write_crossover_tex_table(path: Path, summary: list[dict[str, Any]]) -> None
     path.write_text("\n".join(lines))
 
 
+def write_permutation_tex_table(
+    path: Path,
+    permutation_summary: list[dict[str, Any]],
+    permutation_aggregate: list[dict[str, Any]],
+) -> None:
+    """Write a compact map-level result table for the main text."""
+    by_key = {(row["corpus"], row["assignment_seed"]): row for row in permutation_summary}
+    aggregate = {row["corpus"]: row for row in permutation_aggregate}
+    lines = [
+        "\\begin{tabular}{lcc}",
+        "\\toprule",
+        "Assignment seed & Tiny Shakespeare & enwik8 \\\\",
+        " & Permuted BPB / $\\Delta$ & Permuted BPB / $\\Delta$ \\\\",
+        "\\midrule",
+    ]
+    for assignment_seed in PERMUTATION_SEEDS:
+        tiny = by_key[("Tiny Shakespeare", assignment_seed)]
+        enwik = by_key[("enwik8", assignment_seed)]
+        lines.append(
+            f"{assignment_seed} & {tiny['mean_bpb']:.4f} / $+{tiny['mean_delta_bpb']:.4f}$ & "
+            f"{enwik['mean_bpb']:.4f} / $+{enwik['mean_delta_bpb']:.4f}$ \\\\"
+        )
+    lines.append("\\midrule")
+    tiny = aggregate["Tiny Shakespeare"]
+    enwik = aggregate["enwik8"]
+    lines.append(
+        f"Mean across assignments & {tiny['mean_bpb']:.4f} / $+{tiny['mean_delta_bpb']:.4f}$ & "
+        f"{enwik['mean_bpb']:.4f} / $+{enwik['mean_delta_bpb']:.4f}$ \\\\"
+    )
+    lines.extend(["\\bottomrule", "\\end{tabular}", ""])
+    path.write_text("\n".join(lines))
+
+
+def write_permutation_raw_tex_table(
+    path: Path, permutation_rows: list[dict[str, Any]], summary_by_key: dict[str, dict[str, Any]]
+) -> None:
+    """Write the full assignment-by-model-seed matrix for Appendix D."""
+    values = {
+        (row["corpus"], row["assignment_seed"], row["model_seed"]): row["bpb"]
+        for row in permutation_rows
+    }
+    tiny_flat = summary_by_key["tiny_flat_6"]
+    enwik_flat = summary_by_key["enwik_flat_6"]
+    lines = [
+        "\\begin{tabular}{lrrr|rrr}",
+        "\\toprule",
+        "& \\multicolumn{3}{c|}{Tiny Shakespeare} & \\multicolumn{3}{c}{enwik8} \\\\",
+        "Assignment & $s=13$ & $s=29$ & $s=47$ & $s=13$ & $s=29$ & $s=47$ \\\\",
+        "\\midrule",
+        (
+            f"Flat \\ilm{{}} & {tiny_flat['seed13_bpb']:.6f} & {tiny_flat['seed29_bpb']:.6f} & "
+            f"{tiny_flat['seed47_bpb']:.6f} & {enwik_flat['seed13_bpb']:.6f} & "
+            f"{enwik_flat['seed29_bpb']:.6f} & {enwik_flat['seed47_bpb']:.6f} \\\\"
+        ),
+        "\\midrule",
+    ]
+    for assignment_seed in PERMUTATION_SEEDS:
+        tiny = [values[("Tiny Shakespeare", assignment_seed, seed)] for seed in SEEDS]
+        enwik = [values[("enwik8", assignment_seed, seed)] for seed in SEEDS]
+        lines.append(
+            f"{assignment_seed} & "
+            + " & ".join(f"{value:.6f}" for value in tiny)
+            + " & "
+            + " & ".join(f"{value:.6f}" for value in enwik)
+            + " \\\\"
+        )
+    lines.extend(["\\bottomrule", "\\end{tabular}", ""])
+    path.write_text("\n".join(lines))
+
+
 def figure_style() -> None:
     plt.rcParams.update(
         {
@@ -238,8 +412,8 @@ def save_figure(figure: plt.Figure, stem: str) -> None:
 def plot_bpb_by_scale(rows: list[dict[str, Any]], tier: str, stem: str) -> None:
     family_order = {
         "6.5M": {
-            "Tiny Shakespeare": ["Character GPT", "Atomic Lexical", "Permuted Flat", "Flat ILM", "Full ILM"],
-            "enwik8": ["Byte GPT", "Permuted Flat", "Flat ILM", "Full ILM"],
+            "Tiny Shakespeare": ["Character GPT", "Atomic Lexical", "Flat ILM", "Full ILM"],
+            "enwik8": ["Byte GPT", "Flat ILM", "Full ILM"],
         },
         "15.5M": {
             "Tiny Shakespeare": ["Atomic Lexical", "Flat ILM", "Full ILM"],
@@ -282,48 +456,63 @@ def plot_bpb_by_scale(rows: list[dict[str, Any]], tier: str, stem: str) -> None:
     save_figure(fig, stem)
 
 
-def plot_permutation_control(rows: list[dict[str, Any]]) -> None:
-    comparisons = (
-        ("Tiny Shakespeare", "Permuted Flat", "Flat ILM", "6.5M"),
-        ("enwik8", "Permuted Flat", "Flat ILM", "6.5M"),
-    )
-    colors = {"Permuted Flat": "#a855f7", "Flat ILM": "#2563eb"}
-    selected_rows = [
-        row
+def plot_permutation_control(
+    rows: list[dict[str, Any]], permutation_rows: list[dict[str, Any]], permutation_summary: list[dict[str, Any]]
+) -> None:
+    """Show raw nested runs without conflating map and model-seed variation."""
+    flat_by_corpus_seed = {
+        (row["corpus"], row["seed"]): row["bpb"]
         for row in rows
-        if row["tier"] == "6.5M" and row["family"] in {"Permuted Flat", "Flat ILM"}
-    ]
-    lower = min(row["bpb"] for row in selected_rows)
-    upper = max(row["bpb"] for row in selected_rows)
-    padding = max((upper - lower) * 0.06, 0.01)
+        if row["tier"] == "6.5M" and row["family"] == "Flat ILM"
+    }
+    summary_by_key = {(row["corpus"], row["assignment_seed"]): row for row in permutation_summary}
+    offsets = (-0.10, 0.0, 0.10)
+    colors = {"Flat ILM": "#2563eb", "Permuted Flat": "#a855f7"}
+    fig, axes = plt.subplots(1, 2, figsize=(5.35, 2.35), sharey=False)
+    for ax, corpus in zip(axes, ("Tiny Shakespeare", "enwik8")):
+        flat_values = [flat_by_corpus_seed[(corpus, seed)] for seed in SEEDS]
+        values_by_map = {
+            assignment_seed: [
+                row["bpb"]
+                for row in sorted(
+                    (
+                        row
+                        for row in permutation_rows
+                        if row["corpus"] == corpus and row["assignment_seed"] == assignment_seed
+                    ),
+                    key=lambda item: item["model_seed"],
+                )
+            ]
+            for assignment_seed in PERMUTATION_SEEDS
+        }
+        all_values = flat_values + [value for values in values_by_map.values() for value in values]
+        lower, upper = min(all_values), max(all_values)
+        padding = max((upper - lower) * 0.16, 0.012)
 
-    fig, axes = plt.subplots(1, 2, figsize=(5.2, 2.15), sharey=True)
-    for ax, (corpus, control, semantic, tier) in zip(axes, comparisons):
-        subset = [row for row in rows if row["corpus"] == corpus and row["tier"] == tier]
-        by_key = {(row["family"], row["seed"]): row["bpb"] for row in subset}
-        for seed in SEEDS:
-            values = [by_key[(control, seed)], by_key[(semantic, seed)]]
-            ax.plot([0, 1], values, color="#9ca3af", linewidth=1, zorder=1)
-            ax.scatter([0, 1], values, color=[colors[control], colors[semantic]], s=32, zorder=2)
-        control_values = [by_key[(control, seed)] for seed in SEEDS]
-        semantic_values = [by_key[(semantic, seed)] for seed in SEEDS]
-        delta = statistics.mean(control_values) - statistics.mean(semantic_values)
-        ax.text(
-            0.5,
-            0.04,
-            f"$\\Delta$ = {delta:.3f} BPB",
-            transform=ax.transAxes,
-            ha="center",
-            va="bottom",
-            fontsize=7,
-            bbox={"facecolor": "white", "edgecolor": "none", "alpha": 0.8, "pad": 1.0},
+        ax.scatter(
+            [offset for offset in offsets], flat_values, s=23, color=colors["Flat ILM"], alpha=0.85, zorder=2
         )
-        ax.set_xticks([0, 1], [control, semantic])
+        ax.scatter(0, statistics.mean(flat_values), marker="D", s=35, color=colors["Flat ILM"], edgecolor="white", linewidth=0.55, zorder=4)
+        for x, assignment_seed in enumerate(PERMUTATION_SEEDS, start=1):
+            values = values_by_map[assignment_seed]
+            ax.scatter(
+                [x + offset for offset in offsets], values, s=23, color=colors["Permuted Flat"], alpha=0.85, zorder=2
+            )
+            ax.scatter(
+                x,
+                summary_by_key[(corpus, assignment_seed)]["mean_bpb"],
+                marker="D",
+                s=35,
+                color=colors["Permuted Flat"],
+                edgecolor="white",
+                linewidth=0.55,
+                zorder=4,
+            )
+        ax.set_xticks([0, 1, 2, 3], ["Flat\nILM", "314159", "271828", "161803"])
         ax.set_title(corpus)
         ax.set_ylim(lower - padding, upper + padding)
         ax.grid(axis="y", color="#d1d5db", linewidth=0.7)
         ax.set_axisbelow(True)
-        ax.set_xlim(-0.35, 1.35)
     axes[0].set_ylabel("Test BPB (lower is better)")
     fig.tight_layout(w_pad=1.1)
     save_figure(fig, "semantic_code_permutation_control")
@@ -339,11 +528,18 @@ def write_readme(summary: list[dict[str, Any]]) -> None:
         "",
         "- `seed_bpb.csv` contains one held-out BPB result per model seed.",
         "- `bpb_summary.csv` contains the paper means and sample standard deviations.",
+        "- `permutation_seed_bpb.csv` contains the nine nested permutation-control runs.",
+        "- `permutation_assignment_summary.csv` separates map-level means from training-seed variation.",
+        "- `permutation_aggregate_summary.csv` summarizes the three independent assignment-level means.",
+        "- `permutation_control.tex` is the compact replicated-assignment table included by `main.tex`.",
+        "- `permutation_raw.tex` is the assignment-by-model-seed matrix in Appendix D.",
         "- `crossover_summary.csv` and `optimizer_crossover.tex` record the 6.5M optimizer crossover.",
         "- `results_6m.tex` and `results_15m.tex` are the corpus-paired result tables included by `main.tex`.",
         "- `pairwise_deltas.csv` records the planned contrasts used in the text.",
         "",
-        "The current study has three independently trained seeds: 13, 29, and 47.",
+        "The standard model families use independently trained seeds 13, 29, and 47.",
+        "The permutation control additionally samples assignment seeds 314159, 271828, and 161803,",
+        "with the three model-training seeds nested within each assignment.",
         "Parameter counts are the exact total trainable counts reported in",
         "`experiments/RESULTS.md`.",
         "",
@@ -353,8 +549,8 @@ def write_readme(summary: list[dict[str, Any]]) -> None:
         "| --- | --- | --- | ---: | ---: |",
     ]
     displayed_keys = {
-        "tiny_char_6", "tiny_atomic_6", "tiny_random_6", "tiny_flat_6", "tiny_full_6",
-        "enwik_byte_6", "enwik_random_6", "enwik_flat_6", "enwik_full_6",
+        "tiny_char_6", "tiny_atomic_6", "tiny_flat_6", "tiny_full_6",
+        "enwik_byte_6", "enwik_flat_6", "enwik_full_6",
         "tiny_atomic_15", "tiny_flat_15", "tiny_full_15",
         "enwik_flat_15", "enwik_full_15",
     }
@@ -380,12 +576,16 @@ def main() -> None:
     write_csv(ARTIFACTS_DIR / "bpb_summary.csv", summary)
 
     summary_by_key = {row["family_key"]: row for row in summary}
+    permutation_rows = load_permutation_rows()
+    permutation_summary = summarize_permutation_rows(permutation_rows, summary_by_key)
+    permutation_aggregate = aggregate_permutation_assignments(permutation_summary)
+    write_csv(ARTIFACTS_DIR / "permutation_seed_bpb.csv", permutation_rows)
+    write_csv(ARTIFACTS_DIR / "permutation_assignment_summary.csv", permutation_summary)
+    write_csv(ARTIFACTS_DIR / "permutation_aggregate_summary.csv", permutation_aggregate)
     pair_specs = (
         ("Tiny Shakespeare", "6.5M", "Flat ILM", "Full ILM", "tiny_flat_6", "tiny_full_6"),
-        ("Tiny Shakespeare", "6.5M", "Permuted Flat", "Flat ILM", "tiny_random_6", "tiny_flat_6"),
         ("Tiny Shakespeare", "15.5M", "Flat ILM", "Full ILM", "tiny_flat_15", "tiny_full_15"),
         ("enwik8", "6.5M", "Flat ILM", "Full ILM", "enwik_flat_6", "enwik_full_6"),
-        ("enwik8", "6.5M", "Permuted Flat", "Flat ILM", "enwik_random_6", "enwik_flat_6"),
         ("enwik8", "15.5M", "Flat ILM", "Full ILM", "enwik_flat_15", "enwik_full_15"),
     )
     deltas = []
@@ -409,10 +609,16 @@ def main() -> None:
     write_scale_tex_table(ARTIFACTS_DIR / "results_6m.tex", summary, "6.5M")
     write_scale_tex_table(ARTIFACTS_DIR / "results_15m.tex", summary, "15.5M")
     write_crossover_tex_table(ARTIFACTS_DIR / "optimizer_crossover.tex", crossover_summary)
+    write_permutation_tex_table(
+        ARTIFACTS_DIR / "permutation_control.tex", permutation_summary, permutation_aggregate
+    )
+    write_permutation_raw_tex_table(
+        ARTIFACTS_DIR / "permutation_raw.tex", permutation_rows, summary_by_key
+    )
     write_readme(summary)
     plot_bpb_by_scale(rows, "6.5M", "bpb_6m_by_corpus")
     plot_bpb_by_scale(rows, "15.5M", "bpb_15m_by_corpus")
-    plot_permutation_control(rows)
+    plot_permutation_control(rows, permutation_rows, permutation_summary)
 
 
 if __name__ == "__main__":

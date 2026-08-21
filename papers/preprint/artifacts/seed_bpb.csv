@@ -5,9 +5,6 @@ tiny_char_6,Tiny Shakespeare,6.5M,Character GPT,47,2.678215972871732,6525600,ful
 tiny_atomic_6,Tiny Shakespeare,6.5M,Atomic Lexical,13,2.305153091654439,6469374,full-context,109477.0,30765,experiments/evaluation/results/atomic_lexical_6m_seed13.test_metrics.json
 tiny_atomic_6,Tiny Shakespeare,6.5M,Atomic Lexical,29,2.3081737788527934,6469374,full-context,109477.0,30765,experiments/evaluation/results/atomic_lexical_6m_seed29.test_metrics.json
 tiny_atomic_6,Tiny Shakespeare,6.5M,Atomic Lexical,47,2.3481532148645,6469374,full-context,109477.0,30765,experiments/evaluation/results/atomic_lexical_6m_seed47.test_metrics.json
-tiny_random_6,Tiny Shakespeare,6.5M,Permuted Flat,13,2.289940729119326,6555064,full-context,109477.66666666759,92297,experiments/evaluation/results/random_flat_6m_seed13.test_metrics.json
-tiny_random_6,Tiny Shakespeare,6.5M,Permuted Flat,29,2.309861423699216,6555064,full-context,109477.66666666759,92297,experiments/evaluation/results/random_flat_6m_seed29.test_metrics.json
-tiny_random_6,Tiny Shakespeare,6.5M,Permuted Flat,47,2.289881117546998,6555064,full-context,109477.66666666759,92297,experiments/evaluation/results/random_flat_6m_seed47.test_metrics.json
 tiny_flat_6,Tiny Shakespeare,6.5M,Flat ILM,13,2.159404435995637,6555064,full-context,109477.66666666759,92297,experiments/evaluation/results/c_flat_6m_seed13.test_metrics.json
 tiny_flat_6,Tiny Shakespeare,6.5M,Flat ILM,29,2.1475337903976626,6555064,full-context,109477.66666666759,92297,experiments/evaluation/results/c_flat_6m_seed29.test_metrics.json
 tiny_flat_6,Tiny Shakespeare,6.5M,Flat ILM,47,2.1454413416338016,6555064,full-context,109477.66666666759,92297,experiments/evaluation/results/c_flat_6m_seed47.test_metrics.json
@@ -29,9 +26,6 @@ tiny_full_15,Tiny Shakespeare,15.5M,Full ILM,47,2.1359971029229836,15601932,full
 enwik_byte_6,enwik8,6.5M,Byte GPT,13,2.496670617072063,6567600,block-reset,4999958.0,4999958,experiments/evaluation/results/enwik8_byte_gpt_6m_all_parameters_constant_seed13.test_metrics.json
 enwik_byte_6,enwik8,6.5M,Byte GPT,29,2.4775232325089016,6567600,block-reset,4999958.0,4999958,experiments/evaluation/results/enwik8_byte_gpt_6m_all_parameters_constant_seed29.test_metrics.json
 enwik_byte_6,enwik8,6.5M,Byte GPT,47,2.46478582769697,6567600,block-reset,4999958.0,4999958,experiments/evaluation/results/enwik8_byte_gpt_6m_all_parameters_constant_seed47.test_metrics.json
-enwik_random_6,enwik8,6.5M,Permuted Flat,13,2.4933895005340387,6561064,block-reset,4999940.25,5605600,experiments/evaluation/results/enwik8_lossless_s4_random_flat_6m_seed13.test_metrics.json
-enwik_random_6,enwik8,6.5M,Permuted Flat,29,2.5057466242743116,6561064,block-reset,4999940.25,5605600,experiments/evaluation/results/enwik8_lossless_s4_random_flat_6m_seed29.test_metrics.json
-enwik_random_6,enwik8,6.5M,Permuted Flat,47,2.513156487961057,6561064,block-reset,4999940.25,5605600,experiments/evaluation/results/enwik8_lossless_s4_random_flat_6m_seed47.test_metrics.json
 enwik_flat_6,enwik8,6.5M,Flat ILM,13,2.3365112321518575,6561064,block-reset,4999940.25,5605600,experiments/evaluation/results/enwik8_lossless_s4_c_flat_6m_seed13.test_metrics.json
 enwik_flat_6,enwik8,6.5M,Flat ILM,29,2.3348550756605735,6561064,block-reset,4999940.25,5605600,experiments/evaluation/results/enwik8_lossless_s4_c_flat_6m_seed29.test_metrics.json
 enwik_flat_6,enwik8,6.5M,Flat ILM,47,2.3280253210874347,6561064,block-reset,4999940.25,5605600,experiments/evaluation/results/enwik8_lossless_s4_c_flat_6m_seed47.test_metrics.json

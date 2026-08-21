@@ -6,11 +6,18 @@ and in `../figures/`.
 
 - `seed_bpb.csv` contains one held-out BPB result per model seed.
 - `bpb_summary.csv` contains the paper means and sample standard deviations.
+- `permutation_seed_bpb.csv` contains the nine nested permutation-control runs.
+- `permutation_assignment_summary.csv` separates map-level means from training-seed variation.
+- `permutation_aggregate_summary.csv` summarizes the three independent assignment-level means.
+- `permutation_control.tex` is the compact replicated-assignment table included by `main.tex`.
+- `permutation_raw.tex` is the assignment-by-model-seed matrix in Appendix D.
 - `crossover_summary.csv` and `optimizer_crossover.tex` record the 6.5M optimizer crossover.
 - `results_6m.tex` and `results_15m.tex` are the corpus-paired result tables included by `main.tex`.
 - `pairwise_deltas.csv` records the planned contrasts used in the text.
 
-The current study has three independently trained seeds: 13, 29, and 47.
+The standard model families use independently trained seeds 13, 29, and 47.
+The permutation control additionally samples assignment seeds 314159, 271828, and 161803,
+with the three model-training seeds nested within each assignment.
 Parameter counts are the exact total trainable counts reported in
 `experiments/RESULTS.md`.
 
@@ -20,14 +27,12 @@ Parameter counts are the exact total trainable counts reported in
 | --- | --- | --- | ---: | ---: |
 | Tiny Shakespeare | 6.5M | Character GPT | 2.650571 | 0.037308 |
 | Tiny Shakespeare | 6.5M | Atomic Lexical | 2.320493 | 0.024002 |
-| Tiny Shakespeare | 6.5M | Permuted Flat | 2.296561 | 0.011518 |
 | Tiny Shakespeare | 6.5M | Flat ILM | 2.150793 | 0.007531 |
 | Tiny Shakespeare | 6.5M | Full ILM | 2.120122 | 0.008608 |
 | Tiny Shakespeare | 15.5M | Atomic Lexical | 2.384029 | 0.006054 |
 | Tiny Shakespeare | 15.5M | Flat ILM | 2.140613 | 0.009786 |
 | Tiny Shakespeare | 15.5M | Full ILM | 2.135076 | 0.002098 |
 | enwik8 | 6.5M | Byte GPT | 2.479660 | 0.016049 |
-| enwik8 | 6.5M | Permuted Flat | 2.504098 | 0.009986 |
 | enwik8 | 6.5M | Flat ILM | 2.333131 | 0.004498 |
 | enwik8 | 6.5M | Full ILM | 2.235895 | 0.006256 |
 | enwik8 | 15.5M | Flat ILM | 2.292757 | 0.009464 |

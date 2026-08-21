@@ -1,7 +1,5 @@
 corpus,tier,higher_bpb_family,lower_bpb_family,mean_bpb_difference
 Tiny Shakespeare,6.5M,Flat ILM,Full ILM,0.030670945616523948
-Tiny Shakespeare,6.5M,Permuted Flat,Flat ILM,0.14576790077947965
 Tiny Shakespeare,15.5M,Flat ILM,Full ILM,0.005536488730765843
 enwik8,6.5M,Flat ILM,Full ILM,0.09723545218560625
-enwik8,6.5M,Permuted Flat,Flat ILM,0.1709669946231802
 enwik8,15.5M,Flat ILM,Full ILM,0.11121332247190185
