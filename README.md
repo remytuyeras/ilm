@@ -5,6 +5,8 @@
 
 # Introduction
 
+*Research preprint: [Link to OpenReview](https://openreview.net/forum?id=St7tE87RL3).*
+
 ### Definition and motivations
 
 **Intuitionistic Language Models (ILM)** is a research toolkit for language

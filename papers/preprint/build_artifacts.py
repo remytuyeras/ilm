@@ -439,14 +439,38 @@ def plot_bpb_by_scale(rows: list[dict[str, Any]], tier: str, stem: str) -> None:
     upper = max(row["bpb"] for row in selected_rows)
     padding = max((upper - lower) * 0.06, 0.01)
 
+    point_offsets = (-0.14, 0.0, 0.14)
+    plot_slots = 4
     fig, axes = plt.subplots(1, 2, figsize=(5.4, 2.25), sharey=True)
     for ax, corpus in zip(axes, ("Tiny Shakespeare", "enwik8")):
         subset = [row for row in rows if row["corpus"] == corpus and row["tier"] == tier]
         available = [family for family in family_order[corpus] if any(row["family"] == family for row in subset)]
-        for x, family in enumerate(available):
+        if len(available) == 1:
+            positions = [0.5 * (plot_slots - 1)]
+        else:
+            positions = [index * (plot_slots - 1) / (len(available) - 1) for index in range(len(available))]
+        for x, family in zip(positions, available):
             values = sorted(row["bpb"] for row in subset if row["family"] == family)
-            ax.scatter([x - 0.10, x, x + 0.10], values, s=26, color=colors[family], zorder=3)
-        ax.set_xticks(range(len(available)), available, rotation=24, ha="right")
+            ax.scatter(
+                x,
+                statistics.mean(values),
+                marker="x",
+                s=30,
+                color="#111827",
+                linewidth=1.1,
+                zorder=4,
+            )
+            ax.scatter(
+                [x + offset for offset in point_offsets],
+                values,
+                s=26,
+                color=colors[family],
+                edgecolor="#1f2937",
+                linewidth=0.45,
+                zorder=3,
+            )
+        ax.set_xticks(positions, available, rotation=24, ha="right")
+        ax.set_xlim(-0.35, plot_slots - 0.65)
         ax.set_title(corpus)
         ax.set_ylim(lower - padding, upper + padding)
         ax.grid(axis="y", color="#d1d5db", linewidth=0.7)
@@ -466,7 +490,7 @@ def plot_permutation_control(
         if row["tier"] == "6.5M" and row["family"] == "Flat ILM"
     }
     summary_by_key = {(row["corpus"], row["assignment_seed"]): row for row in permutation_summary}
-    offsets = (-0.10, 0.0, 0.10)
+    offsets = (-0.14, 0.0, 0.14)
     colors = {"Flat ILM": "#2563eb", "Permuted Flat": "#a855f7"}
     fig, axes = plt.subplots(1, 2, figsize=(5.35, 2.35), sharey=False)
     for ax, corpus in zip(axes, ("Tiny Shakespeare", "enwik8")):
@@ -490,22 +514,35 @@ def plot_permutation_control(
         padding = max((upper - lower) * 0.16, 0.012)
 
         ax.scatter(
-            [offset for offset in offsets], flat_values, s=23, color=colors["Flat ILM"], alpha=0.85, zorder=2
+            [offset for offset in offsets],
+            flat_values,
+            s=23,
+            color=colors["Flat ILM"],
+            edgecolor="#1f2937",
+            linewidth=0.45,
+            alpha=0.85,
+            zorder=2,
         )
-        ax.scatter(0, statistics.mean(flat_values), marker="D", s=35, color=colors["Flat ILM"], edgecolor="white", linewidth=0.55, zorder=4)
+        ax.scatter(0, statistics.mean(flat_values), marker="x", s=30, color="#111827", linewidth=1.1, zorder=4)
         for x, assignment_seed in enumerate(PERMUTATION_SEEDS, start=1):
             values = values_by_map[assignment_seed]
             ax.scatter(
-                [x + offset for offset in offsets], values, s=23, color=colors["Permuted Flat"], alpha=0.85, zorder=2
+                [x + offset for offset in offsets],
+                values,
+                s=23,
+                color=colors["Permuted Flat"],
+                edgecolor="#1f2937",
+                linewidth=0.45,
+                alpha=0.85,
+                zorder=2,
             )
             ax.scatter(
                 x,
                 summary_by_key[(corpus, assignment_seed)]["mean_bpb"],
-                marker="D",
-                s=35,
-                color=colors["Permuted Flat"],
-                edgecolor="white",
-                linewidth=0.55,
+                marker="x",
+                s=30,
+                color="#111827",
+                linewidth=1.1,
                 zorder=4,
             )
         ax.set_xticks([0, 1, 2, 3], ["Flat\nILM", "314159", "271828", "161803"])
