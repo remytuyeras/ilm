@@ -14,7 +14,7 @@ is a closed-corpus tokenizer protocol, not a train-only vocabulary protocol.
 | Corpus | Model tiers | Teacher-forced metric | Evaluation mode |
 | --- | --- | --- | --- |
 | Tiny Shakespeare | approximately 6.5M and 15.5M parameters | BPB | full context |
-| enwik8 | approximately 6.5M and 15.5M parameters | BPB | block reset |
+| enwik8 | approximately 6.5M and 15.5M parameters; planned 100M extension | BPB | block reset |
 
 The principal controls retain the same corpus split and training horizon.
 Atomic Lexical preserves ILM's lexical segmentation while replacing coordinate
@@ -1376,6 +1376,122 @@ done
 The character baseline remains directly applicable because enwik8 is a
 byte-level benchmark. The semantic ILM result uses four coordinate roles and
 must be reported separately from the three-coordinate Tiny Shakespeare result.
+
+### Planned 100M Capacity Extension: Flat And Full ILM
+
+The next large-capacity experiment is restricted to enwik8, where the 90M-byte
+training region provides a more informative setting than Tiny Shakespeare for
+a 100M-parameter model. It evaluates Flat ILM and Full ILM with the established
+model-training seeds `13`, `29`, and `47`. Width `1176`, six layers, and six
+heads yield 99,891,856 Flat parameters and 100,343,632 Full parameters.
+
+This is a third fixed-update capacity point, not a scaling-law experiment. It
+preserves the 6,000-update horizon, context, batch size, and evaluation rule
+of the earlier enwik8 ILM tiers. Its optimizer is deliberately changed to a
+large-scale ILM protocol: all-parameter AdamW with a 200-update linear warmup,
+cosine decay from `3e-4` to `3e-5`, and gradient clipping at `1.0`. The
+earlier constant-`1e-3` protocol is unstable at 100M parameters and is not a
+valid large-scale result. A scaling-law claim would require additional
+intermediate sizes and training budgets that scale with model size.
+
+#### Seed-13 Flat Stability Pilot
+
+Run this diagnostic before the full 6,000-update matrix. The training progress
+bar reports only its latest validation estimate, while the checkpoint sidecar
+records the full validation history. Proceed only if the recorded values show
+stable improvement through the pilot horizon. This pilot is not a reported
+result and is intentionally saved under a distinct name.
+
+```bash
+python sandbox/sandbox.py create models/evaluation/enwik8_lossless_s4_c_flat_100m_cosine_pilot_seed13.pth \
+  --seed 13 \
+  --tokenizer-json experiments/evaluation/tokenizers/enwik8_lossless_semantic_d10_s4.json \
+  --train-text experiments/evaluation/splits/enwik8/train.txt \
+  --validation-text experiments/evaluation/splits/enwik8/validation.txt \
+  --test-text experiments/evaluation/splits/enwik8/test.txt \
+  --oov-policy error \
+  --syllable-num 4 --word-block-size 20 --block-size 80 \
+  --embedding-dim 1176 --head-num 6 --layer-num 6 --batch-size 32 \
+  --dropout 0.5 --epoch-num 1600 --lr 3e-4 \
+  --optimizer-profile all-parameters \
+  --lr-schedule cosine --warmup-iters 200 --lr-decay-iters 6000 --min-lr 3e-5 \
+  --weight-decay 0.01 --beta1 0.9 --beta2 0.999 --grad-clip 1.0 \
+  --validation-interval 200 --no-interactive
+```
+
+Print the recorded validation history after the pilot completes:
+
+```bash
+python -c 'import json; path = "models/evaluation/enwik8_lossless_s4_c_flat_100m_cosine_pilot_seed13.json"; history = json.load(open(path))["training_curriculum"][-1]["losses"]["history"]; print("step\\tvalidation_loss"); [print("{}\\t{:.6f}".format(point["step"], point["validation_loss"])) for point in history]'
+```
+
+#### Flat ILM-100M
+
+```bash
+mkdir -p models/evaluation experiments/evaluation/results
+
+for seed in 13 29 47; do
+  python sandbox/sandbox.py create models/evaluation/enwik8_lossless_s4_c_flat_100m_cosine_seed$seed.pth \
+    --seed $seed \
+    --tokenizer-json experiments/evaluation/tokenizers/enwik8_lossless_semantic_d10_s4.json \
+    --train-text experiments/evaluation/splits/enwik8/train.txt \
+    --validation-text experiments/evaluation/splits/enwik8/validation.txt \
+    --test-text experiments/evaluation/splits/enwik8/test.txt \
+    --oov-policy error \
+    --syllable-num 4 --word-block-size 20 --block-size 80 \
+    --embedding-dim 1176 --head-num 6 --layer-num 6 --batch-size 32 \
+    --dropout 0.5 --epoch-num 6000 --lr 3e-4 \
+    --optimizer-profile all-parameters \
+    --lr-schedule cosine --warmup-iters 200 --lr-decay-iters 6000 --min-lr 3e-5 \
+    --weight-decay 0.01 --beta1 0.9 --beta2 0.999 --grad-clip 1.0 \
+    --validation-interval 200 --no-interactive
+
+  python experiments/evaluate_ilm.py \
+    --model-path models/evaluation/enwik8_lossless_s4_c_flat_100m_cosine_seed$seed.pth \
+    --tokenizer-json experiments/evaluation/tokenizers/enwik8_lossless_semantic_d10_s4.json \
+    --test-text experiments/evaluation/splits/enwik8/test.txt \
+    --seed $seed --oov-policy error --require-lossless-encoding \
+    --evaluation-mode block-reset --evaluation-batch-size 128 \
+    --syllable-num 4 --word-block-size 20 --block-size 80 \
+    --embedding-dim 1176 --head-num 6 --layer-num 6 --dropout 0.5 \
+    --output-file experiments/evaluation/results/enwik8_lossless_s4_c_flat_100m_cosine_seed$seed.test_metrics.json
+done
+```
+
+#### Full ILM-100M
+
+```bash
+mkdir -p models/evaluation experiments/evaluation/results
+
+for seed in 13 29 47; do
+  python sandbox/sandbox.py create models/evaluation/enwik8_lossless_s4_c_full_100m_cosine_seed$seed.pth \
+    --seed $seed \
+    --tokenizer-json experiments/evaluation/tokenizers/enwik8_lossless_semantic_d10_s4.json \
+    --train-text experiments/evaluation/splits/enwik8/train.txt \
+    --validation-text experiments/evaluation/splits/enwik8/validation.txt \
+    --test-text experiments/evaluation/splits/enwik8/test.txt \
+    --oov-policy error \
+    --ilm-objective --ilm-input-embeddings --ilm-output-heads \
+    --syllable-num 4 --word-block-size 20 --block-size 80 \
+    --embedding-dim 1176 --head-num 6 --layer-num 6 --batch-size 32 \
+    --dropout 0.5 --epoch-num 6000 --lr 3e-4 \
+    --optimizer-profile all-parameters \
+    --lr-schedule cosine --warmup-iters 200 --lr-decay-iters 6000 --min-lr 3e-5 \
+    --weight-decay 0.01 --beta1 0.9 --beta2 0.999 --grad-clip 1.0 \
+    --validation-interval 200 --no-interactive
+
+  python experiments/evaluate_ilm.py \
+    --model-path models/evaluation/enwik8_lossless_s4_c_full_100m_cosine_seed$seed.pth \
+    --tokenizer-json experiments/evaluation/tokenizers/enwik8_lossless_semantic_d10_s4.json \
+    --test-text experiments/evaluation/splits/enwik8/test.txt \
+    --seed $seed --oov-policy error --require-lossless-encoding \
+    --evaluation-mode block-reset --evaluation-batch-size 128 \
+    --syllable-num 4 --word-block-size 20 --block-size 80 \
+    --embedding-dim 1176 --head-num 6 --layer-num 6 --dropout 0.5 \
+    --ilm-objective --ilm-input-embeddings --ilm-output-heads \
+    --output-file experiments/evaluation/results/enwik8_lossless_s4_c_full_100m_cosine_seed$seed.test_metrics.json
+done
+```
 
 ## Result Discipline
 
