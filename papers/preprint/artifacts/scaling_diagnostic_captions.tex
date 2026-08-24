@@ -1,0 +1,17 @@
+% Reusable captions for the non-paper scaling diagnostics.
+\paragraph{Fixed-budget capacity diagnostic.}
+Seed-level held-out BPB for Flat and Full \ilm{} at the reported parameter tiers.
+Solid segments connect the 6.5M and 15.5M tiers trained under the shared
+compact-model protocol. Dashed colored segments connect the 15.5M tier to the
+approximately 100M enwik8 results, which use a distinct large-scale
+cosine-decay optimization regime. They therefore indicate persistence across
+regimes rather than a homogeneous scaling curve. Points show individual
+model-training seeds, and black crosses show seed means. Blue and green encode
+Flat and Full \ilm{}, respectively. The gray dashed sample in the enwik8 legend
+encodes only the line-style convention for the 100M regime. It does not denote
+a third model condition.
+
+\paragraph{Full-minus-Flat diagnostic.}
+Seed-paired $\Delta$ BPB, defined as Full minus Flat, across the completed
+parameter tiers. Negative values favor Full \ilm{}. Solid and dashed segments
+have the same compact-protocol and 100M-cosine-regime meanings as above.

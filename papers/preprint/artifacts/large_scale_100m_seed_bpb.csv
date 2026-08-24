@@ -1,5 +1,7 @@
 family,seed,parameters,bpb,evaluation_mode,report
 Flat ILM,13,99891856,2.210254702698808,block-reset,experiments/evaluation/results/enwik8_lossless_s4_c_flat_100m_cosine_seed13.test_metrics.json
 Flat ILM,29,99891856,2.2119751372351493,block-reset,experiments/evaluation/results/enwik8_lossless_s4_c_flat_100m_cosine_seed29.test_metrics.json
+Flat ILM,47,99891856,2.2078449786973966,block-reset,experiments/evaluation/results/enwik8_lossless_s4_c_flat_100m_cosine_seed47.test_metrics.json
 Full ILM,13,100343632,2.114867043716642,block-reset,experiments/evaluation/results/enwik8_lossless_s4_c_full_100m_cosine_seed13.test_metrics.json
 Full ILM,29,100343632,2.1136485386452564,block-reset,experiments/evaluation/results/enwik8_lossless_s4_c_full_100m_cosine_seed29.test_metrics.json
+Full ILM,47,100343632,2.111770473562306,block-reset,experiments/evaluation/results/enwik8_lossless_s4_c_full_100m_cosine_seed47.test_metrics.json

@@ -14,6 +14,8 @@ and in `../figures/`.
 - `crossover_summary.csv` and `optimizer_crossover.tex` record the 6.5M optimizer crossover.
 - `results_6m.tex` and `results_15m.tex` are the corpus-paired result tables included by `main.tex`.
 - `pairwise_deltas.csv` records the planned contrasts used in the text.
+- `scaling_diagnostic_captions.tex` documents the protocol-aware captions for
+  the non-paper 6.5M/15.5M/100M capacity diagnostics.
 
 The standard model families use independently trained seeds 13, 29, and 47.
 The permutation control additionally samples assignment seeds 314159, 271828, and 161803,
