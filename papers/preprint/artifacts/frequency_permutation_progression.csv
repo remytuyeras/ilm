@@ -1,0 +1,37 @@
+corpus,assignment_seed,model_seed,condition,flat_bpb,bpb,delta_bpb,report
+Tiny Shakespeare,314159,13,Exact-frequency,2.159404435995637,2.2525562229993312,0.09315178700369442,experiments/evaluation/results/frequency_exact_flat_6m_seed13.test_metrics.json
+Tiny Shakespeare,314159,29,Exact-frequency,2.1475337903976626,2.250824893365645,0.1032911029679826,experiments/evaluation/results/frequency_exact_flat_6m_seed29.test_metrics.json
+Tiny Shakespeare,314159,47,Exact-frequency,2.1454413416338016,2.2557634658878114,0.11032212425400978,experiments/evaluation/results/frequency_exact_flat_6m_seed47.test_metrics.json
+Tiny Shakespeare,314159,13,Unrestricted,2.159404435995637,2.289940729119326,0.13053629312368908,experiments/evaluation/results/random_flat_6m_seed13.test_metrics.json
+Tiny Shakespeare,314159,29,Unrestricted,2.1475337903976626,2.309861423699216,0.1623276333015533,experiments/evaluation/results/random_flat_6m_seed29.test_metrics.json
+Tiny Shakespeare,314159,47,Unrestricted,2.1454413416338016,2.289881117546998,0.14443977591319657,experiments/evaluation/results/random_flat_6m_seed47.test_metrics.json
+Tiny Shakespeare,271828,13,Exact-frequency,2.159404435995637,2.2579081995181474,0.09850376352251056,experiments/evaluation/results/frequency_2_exact_flat_6m_seed13.test_metrics.json
+Tiny Shakespeare,271828,29,Exact-frequency,2.1475337903976626,2.243563296029496,0.09602950563183343,experiments/evaluation/results/frequency_2_exact_flat_6m_seed29.test_metrics.json
+Tiny Shakespeare,271828,47,Exact-frequency,2.1454413416338016,2.254899233889305,0.10945789225550318,experiments/evaluation/results/frequency_2_exact_flat_6m_seed47.test_metrics.json
+Tiny Shakespeare,271828,13,Unrestricted,2.159404435995637,2.29484382784835,0.13543939185271325,experiments/evaluation/results/random_2_flat_6m_seed13.test_metrics.json
+Tiny Shakespeare,271828,29,Unrestricted,2.1475337903976626,2.309639996219656,0.1621062058219933,experiments/evaluation/results/random_2_flat_6m_seed29.test_metrics.json
+Tiny Shakespeare,271828,47,Unrestricted,2.1454413416338016,2.277503439386876,0.13206209775307443,experiments/evaluation/results/random_2_flat_6m_seed47.test_metrics.json
+Tiny Shakespeare,161803,13,Exact-frequency,2.159404435995637,2.2698571582744065,0.11045272227876968,experiments/evaluation/results/frequency_3_exact_flat_6m_seed13.test_metrics.json
+Tiny Shakespeare,161803,29,Exact-frequency,2.1475337903976626,2.2619342533632762,0.11440046296561368,experiments/evaluation/results/frequency_3_exact_flat_6m_seed29.test_metrics.json
+Tiny Shakespeare,161803,47,Exact-frequency,2.1454413416338016,2.2667448321641466,0.12130349053034495,experiments/evaluation/results/frequency_3_exact_flat_6m_seed47.test_metrics.json
+Tiny Shakespeare,161803,13,Unrestricted,2.159404435995637,2.2914912093447266,0.1320867733490898,experiments/evaluation/results/random_3_flat_6m_seed13.test_metrics.json
+Tiny Shakespeare,161803,29,Unrestricted,2.1475337903976626,2.3000896500420422,0.15255585964437968,experiments/evaluation/results/random_3_flat_6m_seed29.test_metrics.json
+Tiny Shakespeare,161803,47,Unrestricted,2.1454413416338016,2.2918179385174184,0.14637659688361682,experiments/evaluation/results/random_3_flat_6m_seed47.test_metrics.json
+enwik8,314159,13,Exact-frequency,2.3365112321518575,2.4216735882375273,0.0851623560856698,experiments/evaluation/results/enwik8_lossless_s4_frequency_exact_flat_6m_seed13.test_metrics.json
+enwik8,314159,29,Exact-frequency,2.3348550756605735,2.43224758821148,0.09739251255090631,experiments/evaluation/results/enwik8_lossless_s4_frequency_exact_flat_6m_seed29.test_metrics.json
+enwik8,314159,47,Exact-frequency,2.3280253210874347,2.429661444590233,0.10163612350279827,experiments/evaluation/results/enwik8_lossless_s4_frequency_exact_flat_6m_seed47.test_metrics.json
+enwik8,314159,13,Unrestricted,2.3365112321518575,2.4933895005340387,0.15687826838218122,experiments/evaluation/results/enwik8_lossless_s4_random_flat_6m_seed13.test_metrics.json
+enwik8,314159,29,Unrestricted,2.3348550756605735,2.5057466242743116,0.17089154861373812,experiments/evaluation/results/enwik8_lossless_s4_random_flat_6m_seed29.test_metrics.json
+enwik8,314159,47,Unrestricted,2.3280253210874347,2.513156487961057,0.1851311668736222,experiments/evaluation/results/enwik8_lossless_s4_random_flat_6m_seed47.test_metrics.json
+enwik8,271828,13,Exact-frequency,2.3365112321518575,2.419240122883916,0.08272889073205869,experiments/evaluation/results/enwik8_lossless_s4_frequency_2_exact_flat_6m_seed13.test_metrics.json
+enwik8,271828,29,Exact-frequency,2.3348550756605735,2.4334066004213946,0.09855152476082107,experiments/evaluation/results/enwik8_lossless_s4_frequency_2_exact_flat_6m_seed29.test_metrics.json
+enwik8,271828,47,Exact-frequency,2.3280253210874347,2.431670794800103,0.10364547371266841,experiments/evaluation/results/enwik8_lossless_s4_frequency_2_exact_flat_6m_seed47.test_metrics.json
+enwik8,271828,13,Unrestricted,2.3365112321518575,2.5216992585143676,0.18518802636251008,experiments/evaluation/results/enwik8_lossless_s4_random_2_flat_6m_seed13.test_metrics.json
+enwik8,271828,29,Unrestricted,2.3348550756605735,2.5194131686154195,0.18455809295484604,experiments/evaluation/results/enwik8_lossless_s4_random_2_flat_6m_seed29.test_metrics.json
+enwik8,271828,47,Unrestricted,2.3280253210874347,2.521926905268709,0.19390158418127434,experiments/evaluation/results/enwik8_lossless_s4_random_2_flat_6m_seed47.test_metrics.json
+enwik8,161803,13,Exact-frequency,2.3365112321518575,2.430254840041365,0.09374360788950753,experiments/evaluation/results/enwik8_lossless_s4_frequency_3_exact_flat_6m_seed13.test_metrics.json
+enwik8,161803,29,Exact-frequency,2.3348550756605735,2.430292018765032,0.09543694310445838,experiments/evaluation/results/enwik8_lossless_s4_frequency_3_exact_flat_6m_seed29.test_metrics.json
+enwik8,161803,47,Exact-frequency,2.3280253210874347,2.431269676828262,0.10324435574082713,experiments/evaluation/results/enwik8_lossless_s4_frequency_3_exact_flat_6m_seed47.test_metrics.json
+enwik8,161803,13,Unrestricted,2.3365112321518575,2.5201683684755953,0.1836571363237378,experiments/evaluation/results/enwik8_lossless_s4_random_3_flat_6m_seed13.test_metrics.json
+enwik8,161803,29,Unrestricted,2.3348550756605735,2.506005340203944,0.17115026454337068,experiments/evaluation/results/enwik8_lossless_s4_random_3_flat_6m_seed29.test_metrics.json
+enwik8,161803,47,Unrestricted,2.3280253210874347,2.531987502270153,0.20396218118271836,experiments/evaluation/results/enwik8_lossless_s4_random_3_flat_6m_seed47.test_metrics.json

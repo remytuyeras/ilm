@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
-"""Build non-paper fixed-budget capacity diagnostics for Flat and Full ILM.
+"""Build fixed-budget capacity diagnostics for Flat and Full ILM.
 
 These figures show outcomes at a common 6,000-update horizon, not fitted
-scaling laws or convergence-adjusted scaling results. They remain separate
-from the preprint's paper figures.
+scaling laws or convergence-adjusted scaling results.
 """
 
 from __future__ import annotations
@@ -30,7 +29,7 @@ ARTIFACTS_DIR = PAPER_DIR / "artifacts"
 FIGURES_DIR = PAPER_DIR / "figures"
 SEED_PATTERN = re.compile(r"_seed(\d+)\.test_metrics\.json$")
 COLORS = {"Flat ILM": "#2563eb", "Full ILM": "#059669"}
-CAPTIONS = r"""% Reusable captions for the non-paper scaling diagnostics.
+CAPTIONS = r"""% Reusable captions for the fixed-budget capacity diagnostics.
 \paragraph{Fixed-budget capacity diagnostic.}
 Seed-level held-out BPB for Flat and Full \ilm{} at the reported parameter tiers.
 Solid segments connect the 6.5M and 15.5M tiers trained under the shared

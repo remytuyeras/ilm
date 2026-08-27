@@ -1,0 +1,227 @@
+{
+  "training_event_count": 241433,
+  "test_event_count": 30766,
+  "reports": [
+    {
+      "lexical_entry_count": 15030,
+      "moved_type_count": 14755,
+      "moved_type_rate": 0.9817032601463739,
+      "training": {
+        "event_count": 241433,
+        "moved_event_count": 77110,
+        "moved_event_rate": 0.3193846740089383,
+        "rho_tokens": 0.3193846740089383,
+        "unmoved_event_count": 164323,
+        "coordinate_depth": 3,
+        "frequency_weighted_marginals_match": true,
+        "frequency_weighted_marginal_l1_by_role": [
+          0,
+          0,
+          0
+        ],
+        "frequency_weighted_marginal_total_variation_by_role": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "frequency_weighted_marginal_max_total_variation": 0.0,
+        "frequency_weighted_marginal_max_cell_difference": 0
+      },
+      "top_unmoved_tokens_by_training_frequency": [
+        {
+          "token": "\n",
+          "training_frequency": 31496
+        },
+        {
+          "token": ",",
+          "training_frequency": 15814
+        },
+        {
+          "token": ":",
+          "training_frequency": 7964
+        },
+        {
+          "token": ".",
+          "training_frequency": 6088
+        },
+        {
+          "token": "'",
+          "training_frequency": 4541
+        },
+        {
+          "token": " the",
+          "training_frequency": 4399
+        },
+        {
+          "token": " to",
+          "training_frequency": 3244
+        },
+        {
+          "token": " and",
+          "training_frequency": 2914
+        },
+        {
+          "token": ";",
+          "training_frequency": 2857
+        },
+        {
+          "token": " I",
+          "training_frequency": 2798
+        },
+        {
+          "token": " of",
+          "training_frequency": 2755
+        },
+        {
+          "token": " my",
+          "training_frequency": 2160
+        },
+        {
+          "token": " you",
+          "training_frequency": 2020
+        },
+        {
+          "token": " a",
+          "training_frequency": 1952
+        },
+        {
+          "token": "?",
+          "training_frequency": 1901
+        },
+        {
+          "token": "!",
+          "training_frequency": 1738
+        },
+        {
+          "token": " in",
+          "training_frequency": 1713
+        },
+        {
+          "token": " that",
+          "training_frequency": 1627
+        },
+        {
+          "token": "-",
+          "training_frequency": 1563
+        },
+        {
+          "token": "s",
+          "training_frequency": 1538
+        }
+      ],
+      "top_moved_tokens_by_training_frequency": [
+        {
+          "token": " it",
+          "training_frequency": 1214
+        },
+        {
+          "token": "d",
+          "training_frequency": 1214
+        },
+        {
+          "token": " at",
+          "training_frequency": 388
+        },
+        {
+          "token": " they",
+          "training_frequency": 388
+        },
+        {
+          "token": " one",
+          "training_frequency": 303
+        },
+        {
+          "token": "As",
+          "training_frequency": 303
+        },
+        {
+          "token": " let",
+          "training_frequency": 289
+        },
+        {
+          "token": " she",
+          "training_frequency": 289
+        },
+        {
+          "token": " did",
+          "training_frequency": 238
+        },
+        {
+          "token": " too",
+          "training_frequency": 238
+        },
+        {
+          "token": " see",
+          "training_frequency": 229
+        },
+        {
+          "token": "GLOUCESTER",
+          "training_frequency": 229
+        },
+        {
+          "token": " some",
+          "training_frequency": 216
+        },
+        {
+          "token": "QUEEN",
+          "training_frequency": 216
+        },
+        {
+          "token": " can",
+          "training_frequency": 193
+        },
+        {
+          "token": " son",
+          "training_frequency": 193
+        },
+        {
+          "token": " give",
+          "training_frequency": 190
+        },
+        {
+          "token": "In",
+          "training_frequency": 190
+        },
+        {
+          "token": "So",
+          "training_frequency": 190
+        },
+        {
+          "token": " life",
+          "training_frequency": 180
+        }
+      ],
+      "test": {
+        "event_count": 30766,
+        "moved_event_count": 9911,
+        "moved_event_rate": 0.3221413248391081,
+        "rho_tokens": 0.3221413248391081,
+        "unmoved_event_count": 20855,
+        "coordinate_depth": 3,
+        "frequency_weighted_marginals_match": false,
+        "frequency_weighted_marginal_l1_by_role": [
+          2472,
+          2662,
+          2412
+        ],
+        "frequency_weighted_marginal_total_variation_by_role": [
+          0.040174218292920755,
+          0.04326204251446402,
+          0.039199115907170255
+        ],
+        "frequency_weighted_marginal_max_total_variation": 0.04326204251446402,
+        "frequency_weighted_marginal_max_cell_difference": 243
+      },
+      "source_tokenizer": "experiments/evaluation/tokenizers/semantic_d10.json",
+      "source_tokenizer_sha256": "419e1d614d35dba1cfcd60c1a8045f6c5b40688b2aaf5bdb1633b0e39c3f6c80",
+      "frequency_text": "experiments/evaluation/splits/tinyshakespeare/train.txt",
+      "frequency_text_sha256": "8564bb90b6305620187b212d62ee40694e1b3639401878b3fdc4ec395016ec4a",
+      "test_text": "experiments/evaluation/splits/tinyshakespeare/test.txt",
+      "test_text_sha256": "aac0501eb329bdd1791dd577b769abad395e2c569c65d7b3180a2fd9d69c9d29",
+      "permuted_tokenizer": "experiments/evaluation/tokenizers/frequency_exact_codes_s3_train_seed161803.json",
+      "permuted_tokenizer_sha256": "5a8668168210bdc60ff1e01cd84cd505f421d90b51c780d053c426787503fe0a",
+      "permutation_seed": 161803,
+      "frequency_control": "exact"
+    }
+  ]
+}

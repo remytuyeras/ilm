@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "model_path": "models/evaluation/frequency_exact_flat_6m_seed29.pth",
+  "tokenizer_json": "experiments/evaluation/tokenizers/frequency_exact_codes_s3_train_seed314159.json",
+  "tokenizer_json_sha256": "de4860f7caec27cd46ad3a4117b969f830718edac06f6cdaeac9f3b2da564759",
+  "test_text": "experiments/evaluation/splits/tinyshakespeare/test.txt",
+  "test_text_sha256": "aac0501eb329bdd1791dd577b769abad395e2c569c65d7b3180a2fd9d69c9d29",
+  "seed": 29,
+  "device": "mps",
+  "oov_policy": "error",
+  "oov_fallback_code": null,
+  "require_lossless_encoding": true,
+  "evaluation_mode": "full-context",
+  "event_unit": "coordinate",
+  "encoding": {
+    "source_bytes": 109478,
+    "tokenized_source_bytes": 109478,
+    "token_count": 30766,
+    "oov_token_count": 0,
+    "oov_rate": 0.0,
+    "coordinate_count": 92298,
+    "fallback_code": null
+  },
+  "architecture": {
+    "vocab_size": 64,
+    "atomic_lexical": false,
+    "syllable_num": 3,
+    "word_block_size": 20,
+    "block_size": 60,
+    "embedding_dim": 300,
+    "head_num": 6,
+    "layer_num": 6,
+    "ilm_input_embeddings": false,
+    "ilm_output_heads": false,
+    "ilm_objective": false
+  },
+  "teacher_forced": {
+    "coordinate_nll_nats": 170801.90228496597,
+    "coordinate_events": 92297,
+    "evaluation_mode": "full-context",
+    "scored_source_bytes": 109477.66666666759,
+    "bits_per_utf8_byte": 2.250824893365645,
+    "coordinate_nll_nats_per_event": 1.850568298915089
+  }
+}

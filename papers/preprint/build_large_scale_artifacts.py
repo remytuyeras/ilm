@@ -79,6 +79,26 @@ def write_csv(path: Path, rows: list[dict[str, object]]) -> None:
         writer.writerows(rows)
 
 
+def write_tex_table(path: Path, rows: list[dict[str, object]], summaries: list[dict[str, object]]) -> None:
+    summary_by_family = {str(row["family"]): row for row in summaries}
+    lines = [
+        r"\begin{tabular}{lrr}",
+        r"\toprule",
+        r"Family & Trainable parameters & BPB (mean $\pm$ s.d.) \\",
+        r"\midrule",
+    ]
+    for family in FAMILIES:
+        summary = summary_by_family[family.label]
+        values = [float(row["bpb"]) for row in rows if row["family"] == family.label]
+        mean = float(summary["mean_bpb"])
+        sd = float(summary["sample_sd_bpb"])
+        lines.append(
+            f"{family.label} & {family.parameters:,} & {mean:.4f} $\\pm$ {sd:.4f} \\\\"
+        )
+    lines.extend([r"\bottomrule", r"\end{tabular}", ""])
+    path.write_text("\n".join(lines), encoding="utf-8")
+
+
 def main() -> None:
     ARTIFACTS_DIR.mkdir(parents=True, exist_ok=True)
     FIGURES_DIR.mkdir(parents=True, exist_ok=True)
@@ -99,6 +119,7 @@ def main() -> None:
         )
     write_csv(ARTIFACTS_DIR / "large_scale_100m_seed_bpb.csv", rows)
     write_csv(ARTIFACTS_DIR / "large_scale_100m_summary.csv", summaries)
+    write_tex_table(ARTIFACTS_DIR / "large_scale_100m.tex", rows, summaries)
 
     figure, axis = plt.subplots(figsize=(3.7, 2.65))
     values_by_family = {

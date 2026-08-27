@@ -94,11 +94,52 @@ The first three rows report the sample standard deviation across model-training
 seeds. The aggregate row reports the sample standard deviation across the three
 assignment-level means.
 
-All nine matched model-seed comparisons are worse under the permuted map on
-each corpus. The type-level code set is preserved, but the control does not
-preserve corpus-frequency-weighted coordinate marginals. It therefore supports
-an effect of the complete lexical-to-code association rather than isolating
-semantic geometry independently of frequency statistics.
+All nine matched model-seed comparisons are worse under the unrestricted
+permuted map on each corpus. The type-level code set is preserved, while corpus
+frequency is redistributed across occupied coordinate paths. The
+exact-frequency control below addresses this frequency-marginal dimension
+directly.
+
+### Exact-Frequency Permuted Flat Control
+
+Exact-frequency reassignment permutes lexical entries only within strata whose
+integer training frequencies agree. It therefore preserves every
+training-frequency-weighted coordinate marginal exactly. Each row averages the
+three model-training seeds under one fixed reassignment. The aggregate row is
+the mean across assignment-level means.
+
+| Assignment seed | Tiny Shakespeare BPB / s.d. | Tiny Delta | enwik8 BPB / s.d. | enwik8 Delta |
+| ---: | ---: | ---: | ---: | ---: |
+| `314159` | 2.253048 +/- 0.002506 | +0.102255 | 2.427861 +/- 0.005512 | +0.094730 |
+| `271828` | 2.252124 +/- 0.007565 | +0.101330 | 2.428106 +/- 0.007727 | +0.094975 |
+| `161803` | 2.266179 +/- 0.003992 | +0.115386 | 2.430606 +/- 0.000575 | +0.097475 |
+| **Mean across assignments** | **2.257117 +/- 0.007861** | **+0.106324** | **2.428857 +/- 0.001519** | **+0.095727** |
+
+All nine matched model-seed differences are positive for Exact-frequency
+Permuted Flat on both corpora. The table below records the associated type,
+mass, and marginal diagnostics, averaged across assignment seeds. `Moved types`
+is the fraction of lexical types whose assigned path changes. `rho_train` and
+`rho_test` are the fractions of training and test lexical-entry occurrences
+whose assigned path moves. `TV` is the maximum total-variation distance across
+coordinate roles for the corresponding frequency-weighted marginals.
+
+| Corpus | Control | Moved types | rho_train | rho_test | TV_train | TV_test |
+| --- | --- | ---: | ---: | ---: | ---: | ---: |
+| Tiny Shakespeare | Exact-frequency | 0.981 | 0.313 | 0.314 | 0.000 | 0.049 |
+| Tiny Shakespeare | Unrestricted | 1.000 | 1.000 | 1.000 | 0.626 | 0.638 |
+| enwik8 | Exact-frequency | 0.996 | 0.235 | 0.228 | 0.000 | 0.021 |
+| enwik8 | Unrestricted | 1.000 | 1.000 | 1.000 | 0.729 | 0.741 |
+
+Exact-frequency reassignment moves less training-token mass than unrestricted
+reassignment while moving approximately 98% of Tiny Shakespeare types and more
+than 99% of enwik8 types. It leaves the training coordinate marginals unchanged
+and still raises BPB by `0.106324` on Tiny Shakespeare and `0.095727` on enwik8
+relative to the original Flat ILM assignment. The remaining token mass includes
+high-frequency entries in singleton frequency strata, which cannot exchange
+paths under the exact constraint. This shows that changes in
+training-frequency-weighted coordinate marginals are not necessary for the
+permutation penalty, while keeping the claim separate from an isolated
+attribution to embedding geometry.
 
 ## 15.5M Results
 

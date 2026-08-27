@@ -1,0 +1,231 @@
+{
+  "training_event_count": 24941336,
+  "test_event_count": 1401413,
+  "reports": [
+    {
+      "lexical_entry_count": 519955,
+      "moved_type_count": 517745,
+      "moved_type_rate": 0.9957496321797079,
+      "training": {
+        "event_count": 24941336,
+        "moved_event_count": 6152683,
+        "moved_event_rate": 0.24668618393176692,
+        "rho_tokens": 0.24668618393176692,
+        "unmoved_event_count": 18788653,
+        "coordinate_depth": 4,
+        "frequency_weighted_marginals_match": true,
+        "frequency_weighted_marginal_l1_by_role": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "frequency_weighted_marginal_total_variation_by_role": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "frequency_weighted_marginal_max_total_variation": 0.0,
+        "frequency_weighted_marginal_max_cell_difference": 0
+      },
+      "top_unmoved_tokens_by_training_frequency": [
+        {
+          "token": "]",
+          "training_frequency": 1764834
+        },
+        {
+          "token": "[",
+          "training_frequency": 1157602
+        },
+        {
+          "token": "\n",
+          "training_frequency": 1017182
+        },
+        {
+          "token": ".",
+          "training_frequency": 716325
+        },
+        {
+          "token": ",",
+          "training_frequency": 710621
+        },
+        {
+          "token": " the",
+          "training_frequency": 635458
+        },
+        {
+          "token": " [",
+          "training_frequency": 608837
+        },
+        {
+          "token": "'",
+          "training_frequency": 575624
+        },
+        {
+          "token": ";",
+          "training_frequency": 494734
+        },
+        {
+          "token": " of",
+          "training_frequency": 434682
+        },
+        {
+          "token": "|",
+          "training_frequency": 385124
+        },
+        {
+          "token": "/",
+          "training_frequency": 382165
+        },
+        {
+          "token": "&",
+          "training_frequency": 323892
+        },
+        {
+          "token": "=",
+          "training_frequency": 306351
+        },
+        {
+          "token": ":",
+          "training_frequency": 299643
+        },
+        {
+          "token": " and",
+          "training_frequency": 289630
+        },
+        {
+          "token": "-",
+          "training_frequency": 233276
+        },
+        {
+          "token": " in",
+          "training_frequency": 224387
+        },
+        {
+          "token": " to",
+          "training_frequency": 219029
+        },
+        {
+          "token": "*",
+          "training_frequency": 212813
+        }
+      ],
+      "top_moved_tokens_by_training_frequency": [
+        {
+          "token": "<",
+          "training_frequency": 241151
+        },
+        {
+          "token": ">",
+          "training_frequency": 241151
+        },
+        {
+          "token": " those",
+          "training_frequency": 5351
+        },
+        {
+          "token": "5",
+          "training_frequency": 5351
+        },
+        {
+          "token": " York",
+          "training_frequency": 4247
+        },
+        {
+          "token": " did",
+          "training_frequency": 4247
+        },
+        {
+          "token": " ===",
+          "training_frequency": 3698
+        },
+        {
+          "token": " does",
+          "training_frequency": 3698
+        },
+        {
+          "token": " due",
+          "training_frequency": 3698
+        },
+        {
+          "token": " general",
+          "training_frequency": 3597
+        },
+        {
+          "token": " non",
+          "training_frequency": 3597
+        },
+        {
+          "token": " systems",
+          "training_frequency": 3156
+        },
+        {
+          "token": "\u05d9",
+          "training_frequency": 3156
+        },
+        {
+          "token": " field",
+          "training_frequency": 2694
+        },
+        {
+          "token": " states",
+          "training_frequency": 2694
+        },
+        {
+          "token": "gov",
+          "training_frequency": 2690
+        },
+        {
+          "token": "\u043a",
+          "training_frequency": 2690
+        },
+        {
+          "token": " itself",
+          "training_frequency": 2663
+        },
+        {
+          "token": " }}",
+          "training_frequency": 2663
+        },
+        {
+          "token": " especially",
+          "training_frequency": 2527
+        }
+      ],
+      "test": {
+        "event_count": 1401413,
+        "moved_event_count": 339077,
+        "moved_event_rate": 0.2419536567735564,
+        "rho_tokens": 0.2419536567735564,
+        "unmoved_event_count": 1062336,
+        "coordinate_depth": 4,
+        "frequency_weighted_marginals_match": false,
+        "frequency_weighted_marginal_l1_by_role": [
+          59374,
+          44496,
+          35444,
+          31402
+        ],
+        "frequency_weighted_marginal_total_variation_by_role": [
+          0.021183619675284874,
+          0.0158754057511954,
+          0.012645808195014603,
+          0.011203692273441163
+        ],
+        "frequency_weighted_marginal_max_total_variation": 0.021183619675284874,
+        "frequency_weighted_marginal_max_cell_difference": 6563
+      },
+      "source_tokenizer": "experiments/evaluation/tokenizers/enwik8_lossless_semantic_d10_s4.json",
+      "source_tokenizer_sha256": "92948069cb03978f45e5edf42334546f53d0b0fcc116de80ef67865267d80fcf",
+      "frequency_text": "experiments/evaluation/splits/enwik8/train.txt",
+      "frequency_text_sha256": "f8978bd9ca51fbea387d5145d310652ab39904bcbc8ab2647932c8c2e0539e64",
+      "test_text": "experiments/evaluation/splits/enwik8/test.txt",
+      "test_text_sha256": "86f62c0adeb6c27763f308b8913bec743626421a4d2b4010f1e177a40eef7750",
+      "permuted_tokenizer": "experiments/evaluation/tokenizers/enwik8_lossless_frequency_exact_codes_s4_train_seed271828.json",
+      "permuted_tokenizer_sha256": "0c05f9f080f3af2ff06bb2f8ba776c83e55dd141fa6f3c33694c3872d4e762da",
+      "permutation_seed": 271828,
+      "frequency_control": "exact"
+    }
+  ]
+}

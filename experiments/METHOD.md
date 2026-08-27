@@ -14,7 +14,7 @@ is a closed-corpus tokenizer protocol, not a train-only vocabulary protocol.
 | Corpus | Model tiers | Teacher-forced metric | Evaluation mode |
 | --- | --- | --- | --- |
 | Tiny Shakespeare | approximately 6.5M and 15.5M parameters | BPB | full context |
-| enwik8 | approximately 6.5M and 15.5M parameters; planned 100M extension | BPB | block reset |
+| enwik8 | approximately 6.5M, 15.5M, and 100M parameters | BPB | block reset |
 
 The principal controls retain the same corpus split and training horizon.
 Atomic Lexical preserves ILM's lexical segmentation while replacing coordinate
@@ -327,9 +327,11 @@ strings, coordinate base, code depth, and source segmentation as
 `C-Flat-6M`. Each assignment applies one fixed random permutation to the
 assignment from lexical entries to final code strings. This removes the semantic association
 between words and their codes without changing code occupancy or type-level
-coordinate marginals. Corpus-frequency-weighted coordinate marginals are not
-preserved. Each fixed permutation is shared across model seeds `13`, `29`, and
-`47`.
+coordinate marginals. The unrestricted reassignment redistributes corpus
+frequency across occupied coordinate paths. Each fixed permutation is shared
+across model seeds `13`, `29`, and `47`. The completed exact-frequency control
+below separately preserves the training-frequency-weighted coordinate
+marginals.
 
 The permutation index is an independent representation replicate. It is not a
 model-training seed. The original completed control remains index `1` and
@@ -433,6 +435,58 @@ done
 All Tiny Shakespeare model families use explicit train, validation, and test
 files, a shared 6,000-step horizon, and held-out test BPB. Completed outcomes
 are recorded in [RESULTS.md](RESULTS.md).
+
+### Exact-Frequency Permutation Control
+
+Exact-frequency Permuted Flat is a stricter reassignment control. It permutes
+lexical entries only within strata having the same integer occurrence count in
+the frozen `train.txt` split. Consequently, every training-frequency-weighted
+coordinate marginal is preserved exactly. The test-frequency-weighted marginals
+are measured separately because held-out lexical counts can differ from training
+counts. This completed matrix uses the same three assignment seeds and three
+model-training seeds as the unrestricted control.
+
+| Assignment seed | Tiny Shakespeare tokenizer | Tiny result prefix | enwik8 tokenizer | enwik8 result prefix |
+| ---: | --- | --- | --- | --- |
+| `314159` | `frequency_exact_codes_s3_train_seed314159.json` | `frequency_exact_flat_6m` | `enwik8_lossless_frequency_exact_codes_s4_train_seed314159.json` | `enwik8_lossless_s4_frequency_exact_flat_6m` |
+| `271828` | `frequency_exact_codes_s3_train_seed271828.json` | `frequency_2_exact_flat_6m` | `enwik8_lossless_frequency_exact_codes_s4_train_seed271828.json` | `enwik8_lossless_s4_frequency_2_exact_flat_6m` |
+| `161803` | `frequency_exact_codes_s3_train_seed161803.json` | `frequency_3_exact_flat_6m` | `enwik8_lossless_frequency_exact_codes_s4_train_seed161803.json` | `enwik8_lossless_s4_frequency_3_exact_flat_6m` |
+
+Construct each frozen map from the original semantic tokenizer. Repeat this
+command for assignment seeds `271828` and `161803`, substituting the matching
+tokenizer filename from the table.
+
+```bash
+python experiments/create_permuted_tokenizer.py \
+  --source-tokenizer experiments/evaluation/tokenizers/semantic_d10.json \
+  --target-tokenizer experiments/evaluation/tokenizers/frequency_exact_codes_s3_train_seed314159.json \
+  --permutation-seed 314159 \
+  --frequency-control exact \
+  --frequency-text experiments/evaluation/splits/tinyshakespeare/train.txt
+
+python experiments/create_permuted_tokenizer.py \
+  --source-tokenizer experiments/evaluation/tokenizers/enwik8_lossless_semantic_d10_s4.json \
+  --target-tokenizer experiments/evaluation/tokenizers/enwik8_lossless_frequency_exact_codes_s4_train_seed314159.json \
+  --permutation-seed 314159 \
+  --frequency-control exact \
+  --frequency-text experiments/evaluation/splits/enwik8/train.txt
+```
+
+For each row and model-training seed `13`, `29`, and `47`, train and evaluate
+Flat ILM with the same command as the corresponding `C-Flat-6M` family. Use the
+row's tokenizer and result prefix, with `S=3`, block size `60`, and ordinary
+full-context evaluation for Tiny Shakespeare; use `S=4`, block size `80`, and
+block-reset evaluation for enwik8. The model configuration remains width `300`,
+six layers, six heads, batch size `32`, dropout `0.5`, a constant learning rate
+of `1e-3`, and 6,000 updates.
+
+Generate diagnostics for each completed map with
+`experiments/analyze_permutation_controls.py`, passing the original tokenizer,
+the train and test split, and the exact-frequency tokenizer. The analysis
+reports moved type rate, moved training and test token mass, and the maximum
+per-role total-variation distance of frequency-weighted coordinate marginals.
+The completed values and interpretation are recorded in
+[RESULTS.md](RESULTS.md).
 
 ### Seed 13
 
@@ -1377,11 +1431,11 @@ The character baseline remains directly applicable because enwik8 is a
 byte-level benchmark. The semantic ILM result uses four coordinate roles and
 must be reported separately from the three-coordinate Tiny Shakespeare result.
 
-### Planned 100M Capacity Extension: Flat And Full ILM
+### 100M Capacity Extension: Flat And Full ILM
 
-The next large-capacity experiment is restricted to enwik8, where the 90M-byte
-training region provides a more informative setting than Tiny Shakespeare for
-a 100M-parameter model. It evaluates Flat ILM and Full ILM with the established
+The completed large-capacity experiment is restricted to enwik8, where the
+90M-byte training region provides a more informative setting than Tiny
+Shakespeare for a 100M-parameter model. It evaluates Flat ILM and Full ILM with the established
 model-training seeds `13`, `29`, and `47`. Width `1176`, six layers, and six
 heads yield 99,891,856 Flat parameters and 100,343,632 Full parameters.
 
