@@ -189,7 +189,7 @@ def write_mass_tex(path: Path, rows: list[dict[str, Any]]) -> None:
     lines = [
         "\\begin{tabular}{llrrrrr}",
         "\\toprule",
-        "Corpus & Control & Moved types & $\\rho_{\\mathrm{train}}$ & $\\rho_{\\mathrm{test}}$ & "
+        "Corpus & Control & $\\tau_\\pi$ & $\\rho_{\\mathrm{train}}$ & $\\rho_{\\mathrm{test}}$ & "
         "TV$_{\\mathrm{train}}$ & TV$_{\\mathrm{test}}$ \\\\",
         "\\midrule",
     ]

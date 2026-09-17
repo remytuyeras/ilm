@@ -32,8 +32,8 @@ COLORS = {"Flat ILM": "#2563eb", "Full ILM": "#059669"}
 CAPTIONS = r"""% Reusable captions for the fixed-budget capacity diagnostics.
 \paragraph{Fixed-budget capacity diagnostic.}
 Seed-level held-out BPB for Flat and Full \ilm{} at the reported parameter tiers.
-Solid segments connect the 6.5M and 15.5M tiers trained under the shared
-compact-model protocol. Dashed colored segments connect the 15.5M tier to the
+Solid segments connect the 6.5M and 15.5M tiers trained under their shared
+protocol. Dashed colored segments connect the 15.5M tier to the
 approximately 100M enwik8 results, which use a distinct large-scale
 cosine-decay optimization regime. They therefore indicate persistence across
 regimes rather than a homogeneous scaling curve. Points show individual
@@ -45,7 +45,7 @@ a third model condition.
 \paragraph{Full-minus-Flat diagnostic.}
 Seed-paired $\Delta$ BPB, defined as Full minus Flat, across the completed
 parameter tiers. Negative values favor Full \ilm{}. Solid and dashed segments
-have the same compact-protocol and 100M-cosine-regime meanings as above.
+have the same shared-protocol and 100M-cosine-regime meanings as above.
 """
 
 
@@ -236,7 +236,7 @@ def plot_delta(values_by_condition: dict[Condition, dict[int, float]]) -> None:
         if corpus == "enwik8":
             axis.legend(
                 handles=[
-                    Line2D([], [], color="#7c3aed", linewidth=1.4, label="shared compact protocol"),
+                    Line2D([], [], color="#7c3aed", linewidth=1.4, label="6.5M/15.5M shared protocol"),
                     Line2D([], [], color="#4b5563", linewidth=1.2, linestyle="--", label="100M large-scale cosine regime"),
                 ],
                 frameon=False,
